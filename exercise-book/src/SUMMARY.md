@@ -9,3 +9,4 @@
 - [Blinky Exercise](./blinky-exercise.md)
 - [UART echo application](./uart-echo-exercise.md)
 - [Accelerometer Sensor Driver](./accelerometer.md)
+- [UART spacepackets](./uart-spacepackets.md)
