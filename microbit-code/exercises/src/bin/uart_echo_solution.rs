@@ -3,15 +3,15 @@
 
 use embassy_executor::Spawner;
 use embedded_io_async::Write;
-use rust_app as _;
+use exercises as _;
 
 use embassy_nrf::{
-    buffered_uarte, peripherals,
+    peripherals,
     uarte::{self, Baudrate},
 };
 embassy_nrf::bind_interrupts!(
     struct Irqs {
-        UARTE0 => buffered_uarte::InterruptHandler<peripherals::UARTE0>;
+        UARTE0 => uarte::InterruptHandler<peripherals::UARTE0>;
     }
 );
 
@@ -23,26 +23,18 @@ async fn main(_spawner: Spawner) -> ! {
     let mut uarte_config = uarte::Config::default();
     uarte_config.baudrate = Baudrate::BAUD115200;
 
-    let mut driver_rx_buf: [u8; 128] = [0; 128];
-    let mut driver_tx_buf: [u8; 128] = [0; 128];
-    let uart = buffered_uarte::BufferedUarte::new(
+    let uart = uarte::Uarte::new(
         periphs.UARTE0,
-        periphs.TIMER0,
-        periphs.PPI_CH0,
-        periphs.PPI_CH1,
-        periphs.PPI_GROUP0,
         periphs.P1_08,
         periphs.P0_06,
         Irqs,
         uarte_config,
-        &mut driver_rx_buf,
-        &mut driver_tx_buf,
     );
-    let (mut uart_rx, mut uart_tx) = uart.split();
-
+    let (mut uart_tx, mut uart_rx) =
+        uart.split_with_idle(periphs.TIMER0, periphs.PPI_CH0, periphs.PPI_CH1);
     let mut rx_buf: [u8; 64] = [0; 64];
     loop {
-        match uart_rx.read(&mut rx_buf).await {
+        match uart_rx.read_until_idle(&mut rx_buf).await {
             Ok(read_bytes) => match uart_tx.write_all(&rx_buf[0..read_bytes]).await {
                 Ok(_) => {
                     defmt::trace!("read {} bytes", &read_bytes);

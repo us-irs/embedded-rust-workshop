@@ -68,6 +68,18 @@ Your device name might be different! It is named `/dev/ttyACM0` because that was
 
 ## Connecting to the UART interface - Windows
 
-There are various programs available to connect to a serial port. On Linux, you can install
+There are various programs available to connect to a serial port. On Windows, you can install
 [PuTTY](https://putty.org/index.html) and then connect to the serial port using the COM port
 name you found before.
+
+You need to use the Serial connection type and specify a speed of 115200. This could look
+something liket his:
+
+![PuTTY](../assets/putty-config.png)
+
+You can then open the connection to open a session connected to the serial port of the MCU.
+
+## First step - Create a UART driver
+
+In the previous exercise, we created a driver for a GPIO pin. Now, we create a driver for another
+hardware module: The UART. The HAL we are using provides a driver for us.
