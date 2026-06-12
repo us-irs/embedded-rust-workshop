@@ -16,5 +16,7 @@ if they confused you.
   placed on a printed circuit board as part of an embedded system.
 - Firmware: Software which interacts a lot with hardware. Usually refers to the finished software
   product on your MCU which runs the embedded system.
-- PCB or Printed Circuit Board: This is usually an electronic circuit integrated on a sandwhich
+- PCB - Printed Circuit Board: This is usually an electronic circuit integrated on a sandwhich
   structure. Oftentimes, chips, sensors and other components will be soldered on top of the PCB.
+- UART - Universal Asynchronous Receiver-Transmitter: Asynchronous serial communication interface
+  which only requires two physical pins, one for transmission and one for reception.

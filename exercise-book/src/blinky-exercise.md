@@ -115,7 +115,7 @@ something to the RTT pipe.
 <details>
 
 ```rust
-defmt::println!("-- blinky app --");
+defmt::println!("-- microbit v2 Blinky application --");
 ```
 
 </details>
@@ -141,7 +141,8 @@ But what is ROW1 and COL1? Those are actually connected to physical pins of your
 
 ![MCU ports LED](../assets/mcu-ports-led.png)
 
-Search for the two pins and look for the P0.XY number. This number is relevant for the code.
+Search for the two pins and look for the P0.XY number which is on the chip side (yellow background)
+on the left. This number is relevant for the code.
 Alternatively, open the [schematics](MicroBit_V2.0.0_S_schematic.PDF) directly and use the search
 function to find them quickly.
 
@@ -157,7 +158,7 @@ created earlier. The initial level is required because Output pins must have a d
 The third argument is the drive strength. You can use the standard value here.
 
 Create an output driver for ROW1 and store it as a `row1` object. Also do the same for COL1 and
-store it as a `col1` object. Remember that you asssign the actual physical pin, which is re-presented
+store it as a `col1` object. Remember that you assign the actual physical pin, which is re-presented
 by an ID like P0.XY, and which you extracted earlier, by passing the corresponding field of the
 `periphs` structure to the `Output` constructor.
 
@@ -192,8 +193,8 @@ lifetime, we just want to toggle the LED.
 That is equivalent to a permanent loop, so you can use the Rust `loop` constructor for this.
 There already is one in the skeleton to avoid a compilation error.
 Use the [toggle](https://docs.embassy.dev/embassy-nrf/git/nrf52840/gpio/struct.Output.html#method.toggle) method on the correct
-GPIO driver to toggle the LED inside the loop. We actually told you the correct structure before. If you forgot,
-but maybe you can also figure it out from the schematic?
+GPIO driver to toggle the LED inside the loop. We actually told you the correct object/driver to use this on before.
+If you forgot, maybe you can also figure it out from the schematic?
 
 Toggling the LED in a permanent loop would cause the LED to not be on long enough for you
 to see anything. Beside, the tasks was to make it blink with a frequency of 1 second.
@@ -245,6 +246,7 @@ When you run `cargo run --bin blinky`, you should see something like this:
 
 Also, you should see the LED D2 blinking with a frequency of 1 second. If this is the case, you did it!
 Blinking a LED might seem like a mundane task, but it actually teaches various concepts that can
-be transferred to other tasks because it involes resource management and time handling. Also, you
-have extracted information from a schematic now! This is very useful skill that embedded engineers should have.
-It allows you to directly use the schematic that is created as a side-product of the PCB design process.
+be transferred to other tasks because it involes resource management, working with hardware, and
+time handling. Also, you have extracted information from a schematic now! This is very useful skill
+that embedded engineers should have. It allows you to directly use the schematic that is created as
+a side-product of the PCB design process.
