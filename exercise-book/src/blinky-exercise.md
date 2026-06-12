@@ -132,6 +132,7 @@ There is no reason to be overly scared of electronic schematics. Learning to rea
 that can be learnt *without* having to study electronic engineering, and with schematics you
 usually have the source of truth which is relevant for writing your software.
 This is an excerpt of the full schematics that we have [also included in the repository](../../MicroBit_V2.0.0_S_schematic.PDF).
+There is also a [pin map table](https://tech.microbit.org/hardware/schematic) on the website.
 
 Have a look at D2. This is a LED, and the task is to make that one blink. You can assume that the
 LED will turn on if the ROW1 GPIO is configured as an output pin and then driven high while the
@@ -144,7 +145,9 @@ But what is ROW1 and COL1? Those are actually connected to physical pins of your
 Search for the two pins and look for the P0.XY number which is on the chip side (yellow background)
 on the left. This number is relevant for the code.
 Alternatively, open the [schematics](MicroBit_V2.0.0_S_schematic.PDF) directly and use the search
-function to find them quickly.
+function to find them quickly. If you are struggling with this task, you can also simply
+use the [pin map table](https://tech.microbit.org/hardware/schematic) and look at the GPIO name
+for COL1 and ROW1.
 
 <details>
 
@@ -156,7 +159,7 @@ Now we have our physical pins. Have a look at the [GPIO Output driver documentat
 The first argument is a peripheral resource which is a field of the `periphs` structure we
 created earlier. The initial level is required because Output pins must have a defined state.
 The third argument is the drive strength. You can use the standard value here.
-
+<35;48;33M
 Create an output driver for ROW1 and store it as a `row1` object. Also do the same for COL1 and
 store it as a `col1` object. Remember that you assign the actual physical pin, which is re-presented
 by an ID like P0.XY, and which you extracted earlier, by passing the corresponding field of the

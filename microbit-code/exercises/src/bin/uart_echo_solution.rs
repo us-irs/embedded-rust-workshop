@@ -5,10 +5,7 @@ use embassy_executor::Spawner;
 use embedded_io_async::Write;
 use exercises as _;
 
-use embassy_nrf::{
-    peripherals,
-    uarte::{self, Baudrate},
-};
+use embassy_nrf::{peripherals, uarte};
 embassy_nrf::bind_interrupts!(
     struct Irqs {
         UARTE0 => uarte::InterruptHandler<peripherals::UARTE0>;
@@ -21,7 +18,7 @@ async fn main(_spawner: Spawner) -> ! {
 
     defmt::println!("-- microbit v2 UART echo application --");
     let mut uarte_config = uarte::Config::default();
-    uarte_config.baudrate = Baudrate::BAUD115200;
+    uarte_config.baudrate = uarte::Baudrate::BAUD115200;
 
     let uart = uarte::Uarte::new(
         periphs.UARTE0,

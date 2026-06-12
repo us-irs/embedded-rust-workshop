@@ -20,3 +20,7 @@ if they confused you.
   structure. Oftentimes, chips, sensors and other components will be soldered on top of the PCB.
 - UART - Universal Asynchronous Receiver-Transmitter: Asynchronous serial communication interface
   which only requires two physical pins, one for transmission and one for reception.
+- DMA - Direct Memory Access: Hardware subsystems can access the memory of a system directly
+  without CPU intervention.
+- HAL - Hardware Abstraction Layer: High level library providing drivers for the hardware blocks
+  on a microcontroller.
