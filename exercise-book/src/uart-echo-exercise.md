@@ -18,7 +18,7 @@ The microbit v2 has a very convenient feature which allows use to talk with one 
 interfaces via the USB interface you already have. Have a look at this hardware block diagram
 taken from the [website](https://tech.microbit.org/hardware/):
 
-![HW block diagram](../assets/hw-block-diagram.png)
+![HW block diagram](./assets/hw-block-diagram.png)
 
 The nRF52833-QIAA block on the left side is the target MCU we are always programming. The
 other microcontroller on the right side is the interface microcontroller. When we talk to the UART
@@ -78,7 +78,7 @@ name you found before.
 You need to use the Serial connection type and specify a speed of 115200. This could look
 something liket his:
 
-![PuTTY](../assets/putty-config.png)
+![PuTTY](./assets/putty-config.png)
 
 You can then open the connection to open a session connected to the serial port of the MCU.
 
@@ -93,7 +93,7 @@ of pins to be assigned to the UART. Similarly to the blinky exercise where LED c
 to certain GPIO pins, there is a pin mapping which depends on the board design.
 
 You can either look at the [pin map](https://tech.microbit.org/hardware/schematic/) or
-the [schematic](../assets/MicroBit_V2.0.0_S_schematic.PDF) to find the GPIO pin assignment.
+the [schematic](./assets/MicroBit_V2.0.0_S_schematic.PDF) to find the GPIO pin assignment.
 Try to figure the pin mapping out on your own.
 
 <details>
