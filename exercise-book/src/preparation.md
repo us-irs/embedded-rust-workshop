@@ -110,7 +110,7 @@ You can flash a test application now to test everything. We provide some test ap
 Connect the board to your computer using a Micro-USB cable. Make sure that your cable also
 supports the data interface and is not power-only.
 
-Go into the `microbit-code/app` directory.
+Navigate into the `microbit-apps` directory.
 
 Now, you can run the following command to build and flash a blinky application:
 

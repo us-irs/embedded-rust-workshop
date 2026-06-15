@@ -7,7 +7,7 @@ It involves working with a general purpose Input/Output (GPIO) pin which is a ve
 microcontrollers. It also involves a timing components to achieve the 1 second blink frequency.
 In this exercise, you are going to build this application.
 
-Go into the `microbit-code/exercises` directory. Inside the `src/bin/blinky.rs` file, you can
+Go into the `microbit-exercises` directory. Inside the `src/bin/blinky.rs` file, you can
 find the skeleton project that you should edit to work towards the blinky application. It includes
 an explanation of the intermediate steps. Each intermediate step is explained in this document
 in detail, including an intermediate solution which you can see by opening expanding the detail
