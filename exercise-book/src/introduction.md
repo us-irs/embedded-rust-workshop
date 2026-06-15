@@ -51,6 +51,8 @@ The following materials might be valuable for you as well:
 - [The Ferrous Systems Rust Training slides](https://rust-training.ferrous-systems.com/latest/slides/)
   provide high-quality slides about various topics, including embedded Rust and aspects like
   system boot and peripheral access crates.
+- [Microbit v2 BSP](https://github.com/lulf/microbit-bsp) provides a full BSP with drivers for
+  the various board components.
 
 ## Preparation
 

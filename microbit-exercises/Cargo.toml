@@ -10,7 +10,11 @@ embassy-nrf = { version = "0.10.0", features = ["defmt", "nrf52833", "time-drive
 
 defmt = "1.0.1"
 defmt-rtt = "1.0.0"
+thiserror = { version = "2", default-features = false }
+lsm303agr = { version = "1", features = ["async"] }
 
+bitbybit = { version = "2" }
+arbitrary-int = { version = "2", features = ["defmt"] }
 cortex-m = { version = "0.7.6", features = ["inline-asm", "critical-section-single-core"] }
 cortex-m-rt = "0.7.0"
 panic-probe = { version = "1.0.0", features = ["print-defmt"] }

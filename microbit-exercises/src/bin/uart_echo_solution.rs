@@ -6,6 +6,7 @@ use embedded_io_async::Write;
 use exercises as _;
 
 use embassy_nrf::{peripherals, uarte};
+
 embassy_nrf::bind_interrupts!(
     struct Irqs {
         UARTE0 => uarte::InterruptHandler<peripherals::UARTE0>;
