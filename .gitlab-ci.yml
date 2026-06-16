@@ -1,7 +1,47 @@
 stages:
-  - hello
+  - fmt
+  - check
+  - build
+  - build-book
 
-hello_world:
-  stage: hello
+fmt:
+  stage: fmt
+  image: rust:latest
   script:
-    - echo "Hello, world from GitLab CI!"
+    - cd microbit-apps && cargo fmt --check
+    - cd ../microbit-exercises && cargo fmt --check
+
+check-apps:
+  stage: check
+  image: rust:latest
+  script:
+    - cd microbit-apps && cargo check
+
+check-exercises:
+  stage: check
+  image: rust:latest
+  script:
+    - cd microbit-exercises && cargo check
+
+build-apps:
+  stage: build
+  image: rust:latest
+  script:
+    - cd microbit-apps && cargo build
+
+build-exercises:
+  stage: build
+  image: rust:latest
+  script:
+    - cd microbit-exercises && cargo build
+
+build-book:
+  stage: build-book
+  image: rust:latest
+  before_script:
+    - cargo install mdbook
+  script:
+    - cd exercise-book && mdbook build
+  artifacts:
+    paths:
+      - exercise-book/book/

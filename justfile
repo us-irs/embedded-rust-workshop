@@ -1,4 +1,4 @@
-all: fmt check
+all: fmt check build
 
 # fmt --format both crates
 fmt: fmt-apps fmt-exercises
@@ -17,3 +17,15 @@ check-apps:
 
 check-exercises:
   @cd microbit-exercises && cargo check
+
+# build both crates
+build: build-apps build-exercises build-book
+
+build-apps:
+  @cd microbit-apps && cargo build
+
+build-exercises:
+  @cd microbit-exercises && cargo build
+
+build-book:
+  @cd exercise-book && mdbook build
