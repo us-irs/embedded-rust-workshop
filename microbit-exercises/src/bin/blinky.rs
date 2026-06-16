@@ -1,8 +1,8 @@
 #![no_std]
 #![no_main]
 
-use exercises as _;
 use embassy_executor::Spawner;
+use exercises as _;
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) -> ! {

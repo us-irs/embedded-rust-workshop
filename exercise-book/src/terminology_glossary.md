@@ -24,3 +24,5 @@ if they confused you.
   without CPU intervention.
 - HAL - Hardware Abstraction Layer: High level library providing drivers for the hardware blocks
   on a microcontroller.
+- I2C - Inter-Integrated Circuit: Communication bus commonly used on embedded systems.
+- TWI - Two-Write Interface: Other name for I2C.

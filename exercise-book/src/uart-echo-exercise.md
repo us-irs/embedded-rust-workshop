@@ -128,7 +128,7 @@ allows to perform something like large data transfers with minimal CPU intervent
 
 The UART driver provided by the HAL that we are going to use combines both of these concepts as well.
 
-## First step - Create a UART driver
+## Step 1 - Create a UART driver
 
 In the previous exercise, we created a driver for a GPIO pin. Now, we create a driver for another
 hardware module: The UART. The HAL we are using provides a driver for us.
@@ -267,7 +267,7 @@ also very complex driver. There are other UART hardware implementations out ther
 support DMA but that are also less complex. Generally, most driver constructors will at the minimum consume pin
 resource handles and the UART resource handle while also expecting some UART configuration.
 
-## Second step - Split the driver into an RX and TX handle
+## Step 2 - Split the driver into an RX and TX handle
 
 Many Rust UART drivers allow splitting themselves up into separate RX and TX handles. For example,
 you might be interested in handling reception and transmission in separate tasks or doing them
@@ -287,7 +287,7 @@ These are already mutable because the methods we are going to use require mutabl
 
 </details>
 
-## Third step - Read into a reception buffer inside a loop
+## Step 3 - Read into a reception buffer inside a loop
 
 Now we want to read something from the UART. You can use the `uart_rx` driver to do this. It has
 an  [`async` `read` method](https://docs.embassy.dev/embassy-nrf/git/nrf52833/buffered_uarte/struct.BufferedUarteRx.html#method.read)
@@ -317,7 +317,7 @@ the loop call because there is no need to re-instantiate it for every `read` cal
 
 </details>
 
-## Fourth step - Write back whatever was received
+## Step 4 - Write back whatever was received
 
 Now, we want to send back everything we received. In the `Ok` case, we will have access
 to the number of received bytes. This can also be smaller than the full buffer size!
@@ -346,7 +346,7 @@ Remember that you want to send the number of bytes you actually received back, n
 
 </details>
 
-## Fifth step - Verifying everything works
+## Step 5 - Verifying everything works
 
 Now, after you have flashed this application using `cargo run --bin uart_echo`, you send
 anything to the MCU and it should be sent back. When you use an application like `picocom` or
