@@ -1,42 +1,38 @@
+variables:
+  CARGO_HOME: ${CI_PROJECT_DIR}/.cargo
+
+default:
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .cargo
+      - target
+
 stages:
-  - fmt
-  - check
-  - build
-  - build-book
+  - stage1
+  - stage2
 
 fmt:
-  stage: fmt
+  stage: stage1
   image: rust:latest
   script:
     - cd microbit-apps && cargo fmt --check
     - cd ../microbit-exercises && cargo fmt --check
 
 check-apps:
-  stage: check
+  stage: stage1
   image: rust:latest
   script:
     - cd microbit-apps && cargo check
 
 check-exercises:
-  stage: check
+  stage: stage1
   image: rust:latest
   script:
     - cd microbit-exercises && cargo check
 
-build-apps:
-  stage: build
-  image: rust:latest
-  script:
-    - cd microbit-apps && cargo build
-
-build-exercises:
-  stage: build
-  image: rust:latest
-  script:
-    - cd microbit-exercises && cargo build
-
 build-book:
-  stage: build-book
+  stage: stage1
   image: rust:latest
   before_script:
     - cargo install mdbook
@@ -45,3 +41,15 @@ build-book:
   artifacts:
     paths:
       - exercise-book/book/
+
+build-apps:
+  stage: stage2
+  image: rust:latest
+  script:
+    - cd microbit-apps && cargo build
+
+build-exercises:
+  stage: stage2
+  image: rust:latest
+  script:
+    - cd microbit-exercises && cargo build
