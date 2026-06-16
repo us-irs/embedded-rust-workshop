@@ -43,8 +43,8 @@ or with SSH:
 git clone git@git.irs.uni-stuttgart.de:irs/embedded-rust-workshop.git
 ```
 
-Have a look at the README of the repository. It explains the diretory structure. The
-most relevant part of the repository for you is the `microbit-code/exercises` folder.
+Have a look at the README of the repository. It explains the directory structure. The
+most relevant part of the repository for you is the `microbit-exercises` folder.
 
 Now that you have cloned the project, you might have to set up some software.
 
