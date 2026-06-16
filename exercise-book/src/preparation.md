@@ -76,7 +76,7 @@ cargo install flip-link
 
 ## Flasher tool `probe-rs`
 
-Next, you need some software which allows flashing the microbit v2 via the USB interface.
+Next, you need some software which allows flashing the micro:bit via the USB interface.
 We are going to use the `probe-rs` tool, which is well integrated into the Rust ecosystem:
 
 The `probe-rs` website has [install instructions](https://probe.rs/docs/getting-started/installation/)
@@ -96,7 +96,7 @@ issues. `probe-rs` has a [page with steps you can follow](https://probe.rs/docs/
 
 You can use any IDE of your choice which has good [Rust Analyzer Support](https://rust-analyzer.github.io/).
 
-If you are looking for a solid graphical IDE, [VS Code](https://code.visualstudio.com/<35;127;26M)
+If you are looking for a solid graphical IDE, [VS Code](https://code.visualstudio.com/)
 is an excellent choice. Make sure to install the [rust-analyzer plugin](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer) as well.
 
 ## Testing everything
@@ -126,7 +126,7 @@ On the console, you should see an output like this:
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.17s
      Running `probe-rs run --chip nRF52833_xxAA --allow-erase-all target/thumbv7em-none-eabihf/debug/blinky`
       Erasing ✔ 100% [####################]  48.00 KiB @  35.81 KiB/s (took 1s)     Finished in 3.55s
--- microbit v2 Blinky application --
+-- micro:bit Blinky application --
 ```
 
 If `probe-rs` can not detect anything, make sure that (a) the board is connected through USB, and

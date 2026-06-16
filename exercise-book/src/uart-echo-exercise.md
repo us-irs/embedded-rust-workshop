@@ -1,6 +1,6 @@
 # UART echo application
 
-The end goal of this task is to communicate with the serial port of the microbit v2.
+The end goal of this task is to communicate with the serial port of the micro:bit.
 A very common interface to allow communication with a microcontroller is the
 [UART protocol](https://en.wikipedia.org/wiki/Universal_asynchronous_receiver-transmitter).
 
@@ -12,9 +12,9 @@ is commonly called baudrate.
 The specific task is an echo application: Everything that is received on the RX
 pin of the microcontroller UART should be sent back to the sender via the TX pin.
 
-## The microbit v2 UART interface
+## The micro:bit UART interface
 
-The microbit v2 has a very convenient feature which allows use to talk with one of its UART
+The micro:bit v2 has a very convenient feature which allows use to talk with one of its UART
 interfaces via the USB interface you already have. Have a look at this hardware block diagram
 taken from the [website](https://tech.microbit.org/hardware/):
 
@@ -33,7 +33,7 @@ Install the `cyme` tool using the following command:
 cargo install cyme
 ```
 
-Then run the command `cyme` with the microbit v2 connected via USB. You should see a line like
+Then run the command `cyme` with the micro:bit connected via USB. You should see a line like
 this:
 
 ```sh
@@ -85,7 +85,7 @@ You can then open the connection to open a session connected to the serial port 
 ## UART hardware
 
 Before we start writing code, lets look at the hardware first.
-We mentioned that UART uses 2 physical pins. This means that two of the GPIO pins of the microbit v2
+We mentioned that UART uses 2 physical pins. This means that two of the GPIO pins of the micro:bit
 need to be configured so they can be used by the UART hardware block for communication.
 
 For a peripheral like UART, it is very common that a microcontroller support a larger selection
@@ -102,7 +102,7 @@ The RX pin is mapped to P0.06 while the TX pin is mapped to P1.08.
 
 </details>
 
-The microbit v2 also has multiple UART instances. It allows using both of them, and we are going
+The micro:bit also has multiple UART instances. It allows using both of them, and we are going
 to use instance 0.
 
 ## Some background information: Interrupts and direct memory access (DMA)

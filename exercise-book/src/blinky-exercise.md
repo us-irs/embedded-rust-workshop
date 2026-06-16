@@ -74,7 +74,7 @@ we would have to use low-level register access code to interact with the hardwar
 is not really beginner friendly, so we will start with something more high-level. The HAL
 introduces hardware abstractions, data structures and objects to interact with the hardware.
 
-The nRF52833 chip which is part of the microbit v2 has some initialization which makes sense for
+The nRF52833 chip which is part of the micro:bit has some initialization which makes sense for
 most firmware. This can include something like the clock initialization. When writing this HAL, it
 makes sense packaging that configuration inside some initializer function.
 
@@ -116,7 +116,7 @@ something to the RTT pipe.
 <details>
 
 ```rust
-defmt::println!("-- microbit v2 Blinky application --");
+defmt::println!("-- micro:bit Blinky application --");
 ```
 
 </details>
@@ -244,7 +244,7 @@ When you run `cargo run --bin blinky`, you should see something like this:
      Running `probe-rs run --chip nRF52833_xxAA --allow-erase-all target/thumbv7em-none-eabihf/debug/blinky_solution`
       Erasing ✔ 100% [####################]  48.00 KiB @  35.91 KiB/s (took 1s)
   Programming ✔ 100% [####################]  48.00 KiB @  22.82 KiB/s (took 2s)     Finished in 3.54s
--- microbit v2 Blinky application --
+-- micro:bit Blinky application --
 ```
 
 Also, you should see the LED D2 blinking with a frequency of 1 second. If this is the case, you did it!

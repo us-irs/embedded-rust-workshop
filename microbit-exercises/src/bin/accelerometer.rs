@@ -8,7 +8,7 @@ use exercises as _;
 async fn main(_spawner: Spawner) -> ! {
     let _periphs = embassy_nrf::init(embassy_nrf::config::Config::default());
 
-    defmt::println!("-- microbit v2 Accelerometer application --");
+    defmt::println!("-- micro:bit Accelerometer application --");
 
     // TODOs
     //

@@ -19,7 +19,7 @@ embassy_nrf::bind_interrupts!(
 async fn main(_spawner: Spawner) -> ! {
     let periphs = embassy_nrf::init(embassy_nrf::config::Config::default());
 
-    defmt::println!("-- microbit v2 UART echo application --");
+    defmt::println!("-- micro:bit v2 UART echo application --");
     let mut uarte_config = uarte::Config::default();
     uarte_config.baudrate = Baudrate::BAUD115200;
     let mut driver_rx_buf: [u8; 256] = [0; 256];

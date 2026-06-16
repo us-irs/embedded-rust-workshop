@@ -2,11 +2,11 @@
 
 This is the exercise book accompanying the Embedded Rust Workshop.
 The Workshop provides exercises for Embedded Rust which run on the
-[BBC microbit v2](https://microbit.org/new-microbit/).
+[BBC micro:bit v2](https://microbit.org/new-microbit/).
 
 For this exercises, you only require the following hardware:
 
-- The [microbit v2](https://microbit.org/new-microbit/).
+- The [micro:bit v2](https://microbit.org/new-microbit/).
 - A Micro-USB cable to power the microbit while also connecting it to your computer.
 
 This little educational board has everything we need to teach you the practical part of embedded
@@ -17,7 +17,7 @@ Rust, including:
 - A serial connection accessible by a USB-CDC device
 
 This device has even more features and external connectivity, and you can find all
-of this information of the [microbit website](https://tech.microbit.org/hardware/).
+of this information of the [micro:bit website](https://tech.microbit.org/hardware/).
 
 ## Goals
 
@@ -39,8 +39,8 @@ recommendations to address this.
 
 ## Further Materials
 
-If you are a beginner in Rust, it is strongly recommended to work through the [Rust book](https://doc.rust-lang.org/book/) or work
-through some other method of your choice to learn the general language.
+If you are a beginner in Rust, it is strongly recommended to work through the [Rust book](https://doc.rust-lang.org/book/)
+or work through some other method of your choice to learn the general language.
 
 The following materials might be valuable for you as well:
 
@@ -51,7 +51,7 @@ The following materials might be valuable for you as well:
 - [The Ferrous Systems Rust Training slides](https://rust-training.ferrous-systems.com/latest/slides/)
   provide high-quality slides about various topics, including embedded Rust and aspects like
   system boot and peripheral access crates.
-- [Microbit v2 BSP](https://github.com/lulf/microbit-bsp) provides a full BSP with drivers for
+- [Micro:bit BSP](https://github.com/lulf/microbit-bsp) provides a full BSP with drivers for
   the various board components.
 
 ## Preparation

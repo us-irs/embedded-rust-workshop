@@ -1,10 +1,11 @@
 # Accelerometer Sensor Driver
 
-The microbit v2 has an on-board LSM303AGR e-compass module. Writing device drivers is a common
+The micro:bit v2 has an on-board LSM303AGR e-compass module. Writing device drivers is a common
 task in our domain, so that is what we are going to do in this exercise. There are open-source
 drivers [available](https://docs.rs/lsm303agr/latest/lsm303agr/), but we are going to write a new
 one so you can actually learn how this process works. This is an on-board [MEMS](https://en.wikipedia.org/wiki/MEMS)
-sensor. It's tiny! You can see where it is located on the board on the [website](https://tech.microbit.org/hardware/#overview). Look for the ST LSM303AGR on the board images.
+sensor. It's tiny! You can see where it is located on the board on the [website](https://tech.microbit.org/hardware/#overview).
+Look for the ST LSM303AGR on the board images.
 
 This is a capable MEMS sensor which has confusing sections in its [datasheet](https://www.st.com/en/mems-and-sensors/lsm303agr.html).
 It uses a lot of abbreviations and expects implicit knowledge. This is unfortunately something that is very
@@ -21,7 +22,7 @@ sensors.
 
 ## Features of the hardware sensor
 
-Let's have a look at the feature set of that sensor first by looking at the [microbit v2 docs](https://tech.microbit.org/hardware/#motion-sensor):
+Let's have a look at the feature set of that sensor first by looking at the [micro:bit docs](https://tech.microbit.org/hardware/#motion-sensor):
 
 - e-compass which combines a magnetometer and and accelerometer into one package
 - Configurable range of 2/4/8/16g
@@ -223,7 +224,7 @@ from the microbit v2 schematic or from the sensor datasheet. Create an associate
 <details>
 
 ```rust
-impl Accelerometer {
+impl Accelerometer<'_> {
     pub const ADDR: u8 = 0x19;
 }
 
@@ -240,9 +241,6 @@ value is not equal to the expected one, and return a driver instance otherwise.
 ```rust
 
 impl<'d> Accelerometer<'d> {
-    pub const ADDR: u8 = 0x19;
-    pub const WHO_AM_I_VALUE: u8 = 0b00110011;
-
     pub async fn new(mut i2c: embassy_nrf::twim::Twim<'d>) -> Result<Self, InitError> {
         let mut buf = [0; 1];
         i2c.write_read(Self::ADDR, &[Register::WhoAmIAcc as u8], &mut buf)
@@ -252,6 +250,11 @@ impl<'d> Accelerometer<'d> {
         }
         Ok(Self { i2c })
     }
+}
+
+impl Accelerometer<'_> {
+    pub const ADDR: u8 = 0x19;
+    pub const WHO_AM_I_VALUE: u8 = 0b00110011;
 }
 ```
 
@@ -452,7 +455,7 @@ pub struct Accelerometer<'d> {
 ```
 
 and inside constructor method, use `core::cell::RefCell::new(i2c)` to wrap the i2c driver in
-a `RefCell`. 
+a `RefCell`.
 
 </details>
 
@@ -472,7 +475,7 @@ a raw `i16` for further conversion. You can use `u16::from_le_bytes` to do this 
 
 ```rust
 
-impl<'d> Accelerometer<'d> {
+impl Accelerometer<'_> {
     pub const ADDR: u8 = 0x19;
     pub const WHO_AM_I_VALUE: u8 = 0b00110011;
     pub const AUTO_INCREMENT_MASK: u8 = 0x80;
@@ -676,4 +679,82 @@ impl Readout {
 
 </details>
 
+Finally, we want to have a convenience method called `read` on our drier which
+returns this `Readout` structure. Add that method and re-use the `read_raw` method
+that you have already written to initialize the `raw` field of the `Readout` structure.
+You can initialize the `full_scale` and `mode` field from the cached values of the driver.
+
+<details>
+
+```rust
+impl Accelerometer<'_>
+    // (other functions...)
+
+    pub async fn read(&self) -> Result<Readout, Error> {
+        Ok(Readout {
+            raw: self.read_raw().await?,
+            full_scale: self.full_scale,
+            mode: self.mode,
+        })
+    }
+}
+```
+
+</details>
+
 ## Step 7 - Print the accelerometer values inside a loop periodically
+
+We finally have everything we need to periodically read the sensor values.
+Go ahead and create the driver you have written inside your example application using the constructor
+you have written.
+The datasheet mentions a start-up time of 1.6 ms for our configuration.
+Call the `read` method periodically inside a loop and print the xyz values using the
+`xyz_mg` method and `defmt`.
+
+<details>
+
+```rust
+    let accelerometer = Accelerometer::new(i2c_bus)
+        .await
+        .expect("creating motion sensor driver failed");
+    // For normal mode, 1.6 ms turn-on time.
+    Delay.delay_us(1600).await;
+
+    loop {
+        match accelerometer.read().await {
+            Ok(reading) => {
+                defmt::info!("Accelerations (mg): {}", &reading.xyz_mg());
+            }
+            Err(e) => {
+                defmt::error!("i2c error: {}", e);
+            }
+        };
+        Timer::after_millis(50).await;
+    }
+
+```
+</details>
+
+## Finishing Up
+
+If you have done everything correctly, you should see output like this:
+
+
+```console
+-- micro:bit Accelerometer application --
+0.003967 [INFO ] Accelerations (mg): (-48, -232, 980) (accelerometer_solution src/bin/accelerometer_solution.rs:43)
+0.055694 [INFO ] Accelerations (mg): (-44, -228, 984) (accelerometer_solution src/bin/accelerometer_solution.rs:43)
+```
+
+Your acceleration values may vary slightly based on the orientation of your micro:bit. Regardless,
+you should measure an acceleration of around 1g, whic his the normal force that counteracts gravity when the
+device rests on a surface.
+
+You can now try things like shaking the device to see how the x and y axis react to this.
+If you have something to cushion the fall, you could also do a freefall test, which should make the
+1g counter force you normally see disappear while the device is free-falling. You might also
+see spikes when the micro:bit is suddenly decelerated after hits a surface after free-falling.
+
+You might wonder why an e-compass module has an accelerometer. You can actually use an accelerometer
+to account for device tilt combined with the magnetometer for the north direction measurement. This is
+a basic form of sensor fusion which can be used to improve the quality of the compass.

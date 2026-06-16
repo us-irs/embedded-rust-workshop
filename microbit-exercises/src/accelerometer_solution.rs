@@ -157,10 +157,6 @@ pub struct Accelerometer<'d> {
 }
 
 impl<'d> Accelerometer<'d> {
-    pub const ADDR: u8 = 0x19;
-    pub const WHO_AM_I_VALUE: u8 = 0b00110011;
-    pub const AUTO_INCREMENT_MASK: u8 = 0x80;
-
     pub async fn new(mut i2c: embassy_nrf::twim::Twim<'d>) -> Result<Self, InitError> {
         let mut buf = [0; 1];
         i2c.write_read(Self::ADDR, &[Register::WhoAmIAcc as u8], &mut buf)
@@ -192,6 +188,10 @@ impl<'d> Accelerometer<'d> {
 }
 
 impl Accelerometer<'_> {
+    pub const ADDR: u8 = 0x19;
+    pub const WHO_AM_I_VALUE: u8 = 0b00110011;
+    pub const AUTO_INCREMENT_MASK: u8 = 0x80;
+
     pub async fn read_raw(&self) -> Result<ReadoutRaw, Error> {
         let mut buf = [0; 6];
         self.i2c
