@@ -21,5 +21,6 @@ async fn main(_spawner: Spawner) -> ! {
     // Step 6 - Add a data type which wraps the raw readout and is able to return the readout
     //          in the SI unit mg.
     // Step 7 - Read and print the accelerometer values in mg periodically inside your application.
+    #[allow(clippy::empty_loop)]
     loop {}
 }

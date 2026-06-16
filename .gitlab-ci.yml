@@ -1,5 +1,6 @@
 variables:
   CARGO_HOME: ${CI_PROJECT_DIR}/.cargo
+  PATH: ${CI_PROJECT_DIR}/.cargo/bin:${PATH}  # Add this!
 
 default:
   cache:
@@ -45,11 +46,27 @@ build-book:
 build-apps:
   stage: stage2
   image: rust:latest
+  before_script:
+    - cargo install flip-link
   script:
     - cd microbit-apps && cargo build
 
 build-exercises:
   stage: stage2
   image: rust:latest
+  before_script:
+    - cargo install flip-link
   script:
     - cd microbit-exercises && cargo build
+
+clippy-apps:
+  stage: stage1
+  image: rust:latest
+  script:
+    - cd microbit-apps && cargo clippy
+
+clippy-exercises:
+  stage: stage1
+  image: rust:latest
+  script:
+    - cd microbit-exercises && cargo clippy

@@ -1,4 +1,4 @@
-all: fmt check build
+all: fmt check clippy build
 
 # fmt --format both crates
 fmt: fmt-apps fmt-exercises
@@ -8,6 +8,15 @@ fmt-apps:
 
 fmt-exercises:
   @cd microbit-exercises && cargo fmt
+
+# clippy --lint both crates
+clippy: clippy-apps clippy-exercises
+
+clippy-apps:
+	@cd microbit-apps && cargo clippy
+
+clippy-exercises:
+	@cd microbit-exercises && cargo clippy
 
 # check --check both crates
 check: check-apps check-exercises

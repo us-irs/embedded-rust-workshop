@@ -18,5 +18,6 @@ async fn main(_spawner: Spawner) -> ! {
     // Step 4: Inside the empty loop, toggle the correct output (only one is required) to toggle the LED
     //         with a certain frequency by using embassy_time::Timer.
 
+    #[allow(clippy::empty_loop)]
     loop {}
 }
