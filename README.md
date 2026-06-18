@@ -1,4 +1,4 @@
-[![book](https://img.shields.io/badge/workshop_book-darkgreen?style=flat)](https://robamu.github.io/embedded-workshop/book/)
+[![book](https://img.shields.io/badge/workshop-book-darkgreen?style=flat)](https://robamu.github.io/embedded-workshop/book/)
 
 Embedded Rust Workshop
 ==========
