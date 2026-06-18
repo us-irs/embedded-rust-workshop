@@ -1,28 +1,28 @@
 # Terminology and Glossary
 
-You can look up some terms in this terminology chapter if you have never heard them before or
-if they confused you.
+You can look up some terms in this terminology chapter if you have never heard them befor or need
+a brief explanation.
 
 - Peripheral: Dedicated hardware unit. On microcontrollers, this can be something like a UART, SPI
   or timer hardware block.
 - Flash: Non-volatile memory which you can use to store your code and constants.
-- Stack: Local memory that your program uses as it executes functions
+- Stack: Local memory that your program uses as it executes functions.
 - Heap: Free memory that can be allocated in blocks. Oftentimes not available on microcontrollers.
 - Static: Usually refers to the lifetime of a variable. A static variable is valid for the whole
   program duration.
 - RAM: Volatile memory used to store your stack, heap and static variables.
-- Processor: Executes your code.
+- Processor: Hardware block which executes your code.
 - MCU or Microcontroller: Integrates the processor, peripherals, flash, RAM and is usually
   placed on a printed circuit board as part of an embedded system.
-- Firmware: Software which interacts a lot with hardware. Usually refers to the finished software
+- Firmware: Software which interacts closely with hardware. Usually refers to the finished software
   product on your MCU which runs the embedded system.
-- PCB - Printed Circuit Board: This is usually an electronic circuit integrated on a sandwhich
-  structure. Oftentimes, chips, sensors and other components will be soldered on top of the PCB.
+- PCB - Printed Circuit Board: This is usually an electronic circuit integrated on a sandwich
+  structure. Often, chips, sensors, and other components will be soldered on top of the PCB.
 - UART - Universal Asynchronous Receiver-Transmitter: Asynchronous serial communication interface
-  which only requires two physical pins, one for transmission and one for reception.
-- DMA - Direct Memory Access: Hardware subsystems can access the memory of a system directly
+  that only requires two physical pins, one for transmission and one for reception.
+- DMA - Direct Memory Access: A hardware subsystem can access the memory of a system directly
   without CPU intervention.
 - HAL - Hardware Abstraction Layer: High level library providing drivers for the hardware blocks
   on a microcontroller.
 - I2C - Inter-Integrated Circuit: Communication bus commonly used on embedded systems.
-- TWI - Two-Write Interface: Other name for I2C.
+- TWI - Two-Wire Interface: Another name for I2C that vendors sometimes use.

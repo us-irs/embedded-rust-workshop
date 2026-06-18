@@ -1,16 +1,16 @@
 # Blinky Exercise
 
-The end goal of this task is to make the LED D2, which is the LED is the upper left corner
+The end goal of this task is to make the LED D2, which is the LED in the upper left corner
 of the LED matrix, blink with a frequency of 1 second.
 
 It involves working with a general purpose Input/Output (GPIO) pin which is a very common task on
-microcontrollers. It also involves a timing components to achieve the 1 second blink frequency.
+microcontrollers. It also involves a timing component to achieve the 1 second blink frequency.
 In this exercise, you are going to build this application.
 
 Go into the `microbit-exercises` directory. Inside the `src/bin/blinky.rs` file, you can
 find the skeleton project that you should edit to work towards the blinky application. It includes
 an explanation of the intermediate steps. Each intermediate step is explained in this document
-in detail, including an intermediate solution which you can see by opening expanding the detail
+in detail, including an intermediate solution which you can see by expanding the detail
 segment.
 
 You can find a full solution inside the `blinky_solution.rs` file.
@@ -56,7 +56,7 @@ to be an `async` function as well.
 The `async fn main(_spawner: Spawner) -> !` function prototype contains the following components:
 
 - `async` because this is an asynchronous function. This allows us, among many other things, to
-  use other `async` API inside the function
+  use other `async` API inside the function.
 - The `!` return type means that this function should never return. A microcontroller software
   generally must run forever, because what would the system do if there is no more code to execute?
 - The `spawner` argument can be used to spawn other `async` tasks. This is important for
@@ -82,7 +82,7 @@ Rust also has a nice type system which allows modelling of our problem domain. W
 microcontroller which has [peripherals](./terminology_glossary.md) and physical pins. We can model
 these entities in our Rust code to allow ownership checks and resource management. For example,
 the chip has a physical pin called `P0_06`. We can model this physical pin as a `P0_06` field
-of a data structure. The we might have some other API which "consumes" this pin to take ownership
+of a data structure. Then we might have some other API which "consumes" this pin to take ownership
 of it and use it for certain purposes. The pin can not be used for some other purpose anymore
 and we prevented one source of a bug using the type system.
 
@@ -94,7 +94,7 @@ method. This is what you want to use to initialize the chip. You can use the `de
 of `embassy_nrf::config::Config`, it serves our purposes for now. Have a look at the
 [documentation of the `Peripherals`](https://docs.embassy.dev/embassy-nrf/git/nrf52840/struct.Peripherals.html)
 data structure which is returned by the `init` function. It models all the peripherals and physical
-pins like we previous metioned.
+pins like we previously metioned.
 
 Call this method and store the `Peripherals` object inside a variable called `periphs`.
 
@@ -123,8 +123,8 @@ defmt::println!("-- micro:bit Blinky application --");
 
 ## Third step: Creating the GPIO drivers
 
-Before we talk about creating the GPIO drivers for switching the LED, let's talk about the the
-hardware first. This is not a classic LED which can be drive by simply toggling a GPIO pin. Instead,
+Before we talk about creating the GPIO drivers for switching the LED, let's talk about the
+hardware first. This is not a classic LED which can be driven by simply toggling a GPIO pin. Instead,
 it is a matrix where each row and each column has one connected GPIO line.
 
 ![LED Matrix](./assets/led-matrix.png)
@@ -161,7 +161,7 @@ The first argument is a peripheral resource which is a field of the `periphs` st
 created earlier. The initial level is required because Output pins must have a defined state.
 The third argument is the drive strength. You can use the standard value here.
 Create an output driver for ROW1 and store it as a `row1` object. Also do the same for COL1 and
-store it as a `col1` object. Remember that you assign the actual physical pin, which is re-presented
+store it as a `col1` object. Remember that you assign the actual physical pin, which is represented
 by an ID like P0.XY, and which you extracted earlier, by passing the corresponding field of the
 `periphs` structure to the `Output` constructor.
 
@@ -193,14 +193,14 @@ Notice how we pass the physical pin object to the output driver.
 Now, we have all the objects required to fulfill our task. For the remainder of the program
 lifetime, we just want to toggle the LED.
 
-That is equivalent to a permanent loop, so you can use the Rust `loop` constructor for this.
+That is equivalent to a permanent loop, so you can use the Rust `loop` construct for this.
 There already is one in the skeleton to avoid a compilation error.
 Use the [toggle](https://docs.embassy.dev/embassy-nrf/git/nrf52840/gpio/struct.Output.html#method.toggle) method on the correct
 GPIO driver to toggle the LED inside the loop. We actually told you the correct object/driver to use this on before.
 If you forgot, maybe you can also figure it out from the schematic?
 
 Toggling the LED in a permanent loop would cause the LED to not be on long enough for you
-to see anything. Beside, the tasks was to make it blink with a frequency of 1 second.
+to see anything. Besides, the tasks was to make it blink with a frequency of 1 second.
 We need to introduce a delay. We are going to use [`embassy_time`](https://docs.rs/embassy-time/latest/embassy_time/) for this.
 
 Again, we included the dependency for you, so you can use it directly. So far, we did not have to use
@@ -247,9 +247,10 @@ When you run `cargo run --bin blinky`, you should see something like this:
 -- micro:bit Blinky application --
 ```
 
-Also, you should see the LED D2 blinking with a frequency of 1 second. If this is the case, you did it!
+Also, you should see the LED D2 blinking with a frequency of 1 second. If this is the case, you've
+done it!
 Blinking a LED might seem like a mundane task, but it actually teaches various concepts that can
-be transferred to other tasks because it involes resource management, working with hardware, and
-time handling. Also, you have extracted information from a schematic now! This is very useful skill
+be transferred to other tasks because it involves resource management, working with hardware, and
+time handling. Also, you have extracted information from a schematic now! This is a very useful skill
 that embedded engineers should have. It allows you to directly use the schematic that is created as
 a side-product of the PCB design process.

@@ -6,11 +6,11 @@ It is recommended to use a terminal for some parts of this workshop. There will 
 of steps and instructions which show terminal commands. On Windows, you should install
 a proper terminal unless you plan to use something like [WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
 
-For example, you can [install the PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/install-powershell-on-windows?view=powershell-7.5#winget).
+For example, you can [install PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/install-powershell-on-windows?view=powershell-7.5#winget).
 
 ## Cloning the project with `git`
 
-It is strongly recommended to clone with project with `git`. If you have never worked with git
+It is strongly recommended to clone the project with `git`. If you have never worked with git
 before, you should work through a tutorial online first, for example [this interactive one](https://learngitbranching.js.org/).
 Alternatively, have a look at the [learning resources](https://git-scm.com/learn).
 If you are a `git` beginner, you can install it using [the website instructions](https://git-scm.com/install/).
@@ -61,7 +61,7 @@ After you have done this, you can verify your installation by running:
 cargo version
 ```
 
-Normally, you would have to also install the `thumbv7em-none-eabihf` toolchain and some other
+Normally, you would also have to install the `thumbv7em-none-eabihf` toolchain and some other
 useful tools, but this is performed automatically for you through the `rust-toolchain.toml`
 file in the code directory.
 
@@ -77,7 +77,7 @@ cargo install flip-link
 ## Flasher tool `probe-rs`
 
 Next, you need some software which allows flashing the micro:bit via the USB interface.
-We are going to use the `probe-rs` tool, which is well integrated into the Rust ecosystem:
+We are going to use the `probe-rs` tool, which is well integrated into the Rust ecosystem.
 
 The `probe-rs` website has [install instructions](https://probe.rs/docs/getting-started/installation/)
 for various operating systems. Follow these, and then test your installation using the following
@@ -94,7 +94,7 @@ issues. `probe-rs` has a [page with steps you can follow](https://probe.rs/docs/
 
 ## IDE
 
-You can use any IDE of your choice which has good [Rust Analyzer Support](https://rust-analyzer.github.io/).
+You can use any IDE of your choice which has good [Rust Analyzer](https://rust-analyzer.github.io/) support.
 
 If you are looking for a solid graphical IDE, [VS Code](https://code.visualstudio.com/)
 is an excellent choice. Make sure to install the [rust-analyzer plugin](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer) as well.
@@ -105,7 +105,7 @@ If you are preparing everything for the workshop, and you do not have access to 
 you are done! You can perform this step once you have access to the hardware in the workshop.
 
 Now you should have everything you need to build and flash some application to the board.
-You can flash a test application now to test everything. We provide some test applications for you.
+You can flash a test application now to verify the setup. We provide some test applications for you.
 
 Connect the board to your computer using a Micro-USB cable. Make sure that your cable also
 supports the data interface and is not power-only.
@@ -133,7 +133,7 @@ If `probe-rs` can not detect anything, make sure that (a) the board is connected
 (b) the `udev` rules were setup properly if you are on Linux.
 
 If everything goes right, you should see the LED in the top-left corner blinking with a frequency of 1 second.
-If this is the case, congratulations, you have built and flashed an embedded Rust app and you made if through
+If this is the case, congratulations, you have built and flashed an embedded Rust app and you made it through
 the preparation chapter successfully!
 
 In the [first exercise](./blinky-exercise.md), you are going to build most parts of a blinky.
