@@ -61,7 +61,7 @@ impl Mode {
             Mode::PowerDown => 1,
             Mode::LowPower => (16 * full_scale) / 2,
             Mode::Normal => (4 * full_scale) / 2,
-            Mode::HighResolution => (1 * full_scale) / 2,
+            Mode::HighResolution => full_scale / 2,
         }
     }
 }
@@ -192,6 +192,7 @@ impl Accelerometer<'_> {
     pub const WHO_AM_I_VALUE: u8 = 0b00110011;
     pub const AUTO_INCREMENT_MASK: u8 = 0x80;
 
+    #[allow(clippy::await_holding_refcell_ref)]
     pub async fn read_raw(&self) -> Result<ReadoutRaw, Error> {
         let mut buf = [0; 6];
         self.i2c

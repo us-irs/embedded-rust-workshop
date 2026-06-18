@@ -19,5 +19,6 @@ async fn main(_spawner: Spawner) -> ! {
     // Step 4: Inside the loop, use the `read_until_idle` method to receive data on the RX pin.
     // Step 5: On successfull reception of RX data, immediately write back the received data using
     //         the `write_all` method of the TX handle you created before.
+    #[allow(clippy::empty_loop)]
     loop {}
 }

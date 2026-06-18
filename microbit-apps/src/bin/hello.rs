@@ -7,5 +7,7 @@ use rust_app as _;
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) -> ! {
     defmt::info!("Hello, world!");
-    loop {}
+    loop {
+        cortex_m::asm::nop();
+    }
 }
