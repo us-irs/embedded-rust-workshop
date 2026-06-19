@@ -4,8 +4,11 @@ The end goal of this task is to make the LED D2, which is the LED in the upper l
 of the LED matrix, blink with a frequency of 1 second.
 
 It involves working with a general purpose Input/Output (GPIO) pin which is a very common task on
-microcontrollers. It also involves a timing component to achieve the 1 second blink frequency.
-In this exercise, you are going to build this application.
+microcontrollers. A GPIO pin is a digital signal pin which can be used as an input pin to measure
+the digital level, or as an output pin to set the digital level. GPIO can also source current
+which can be used to drive a LED.
+
+Writing a blinky also involves a timing component to achieve some blink frequency.
 
 Go into the `microbit-exercises` directory. Inside the `src/bin/blinky.rs` file, you can
 find the skeleton project that you should edit to work towards the blinky application. It includes
@@ -215,6 +218,9 @@ you need to import the `embedded_hal_async::delay::DelayNs` trait for this to wo
 You can store the timer inside a variable called `timer`. Notice that this does not perform
 the required delay. For that, you need to `await` the timer. Use this information to perform
 an asynchronous delay of 1 second or 1000 milliseconds inside the loop.
+
+If you have never worked with `async` before: The `await` is a suffix statement. For example,
+given the object `timer`, you would call `timer.await;` to await the timer.
 
 <details>
 
