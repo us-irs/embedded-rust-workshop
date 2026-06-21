@@ -19,7 +19,7 @@ async fn main(_spawner: Spawner) -> ! {
 
     defmt::println!("-- micro:bit UART echo application --");
     let mut uarte_config = uarte::Config::default();
-    uarte_config.baudrate = uarte::Baudrate::BAUD115200;
+    uarte_config.baudrate = uarte::Baudrate::Baud115200;
 
     let uart = uarte::Uarte::new(
         periphs.UARTE0,
