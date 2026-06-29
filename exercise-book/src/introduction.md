@@ -4,7 +4,7 @@ This is the exercise book accompanying the Embedded Rust Workshop.
 The Workshop provides exercises for Embedded Rust which run on the
 [BBC micro:bit v2](https://microbit.org/new-microbit/).
 
-For this exercises, you only require the following hardware:
+For these exercises, you only require the following hardware:
 
 - The [micro:bit v2](https://microbit.org/new-microbit/).
 - A Micro-USB cable to power the microbit while also connecting it to your computer.

@@ -24,12 +24,12 @@ sensors.
 
 Let's have a look at the feature set of that sensor first by looking at the [micro:bit docs](https://tech.microbit.org/hardware/#motion-sensor):
 
-- e-compass which combines a magnetometer and and accelerometer into one package
+- e-compass which combines a magnetometer and accelerometer into one package
 - Configurable range of 2/4/8/16g
 - Configurable resolution of 8/10/12 bits
 
 The sensor also has an output data rate (ODR) configuration which specifies how often the sensor
-updates its internal value. Let's make some requirements for our driver so simplify our task:
+updates its internal value. Let's make some requirements for our driver to simplify our task:
 
 - Our simple driver will only support +- 2g.
 - Only support normal resolution of 10 bits.
@@ -44,14 +44,14 @@ We can see that the sensor is connected through I2C. An in-depth explanation of 
 bus would exceed the scope of this exercise, but the most relevant key information from a software
 engineering perspective are summarized here:
 
-- I2C allow communication between multiple devices through two GPIO pins only. One clock is the
+- I2C allows communication between multiple devices through two GPIO pins only. One is the
   data pin which is called the serial data line (SDA) and the other pin is called the serial clock
   (SCL)
 - The most common I2C communication speeds are normal mode with 100 kHz and fast mode with 400 kHz.
-- I2C relies of device addressing to allow talking to a single device on a shared bus.
+- I2C relies on device addressing to allow talking to a single device on a shared bus.
 - An I2C transaction can be abstracted with three operations: `read`, `write` and `read_write`.
 
-The Rust embedded-hal crate provide generic traits that portable device drivers and HAL implementations
+The Rust embedded-hal crate provides generic traits that portable device drivers and HAL implementations
 need to agree on. You can have a look at how these basic bus properties were captured in the
 [I2C trait](https://docs.rs/embedded-hal/1.0.0/embedded_hal/i2c/trait.I2c.html). Notice how its
 API functions expect a device address and are named `read`, `write` and `read_write`.
@@ -70,8 +70,8 @@ When it comes to writing device drivers, you will generally wrap the communicati
 in your driver. For this device, you would wrap some I2C driver. We can omit some abstraction
 because we know that we are never going to share the bus,
 and we do not want to write a portable driver. This means we can wrap the bus driver provided
-by the HAL. Nordic uses a different name for the I2C protocol and calls it TWI (two-write interface).
-There is a [`twim`](https://docs.embassy.dev/embassy-nrf/git/nrf52833/twim/index.html) providing
+by the HAL. Nordic uses a different name for the I2C protocol and calls it TWI (two-wire interface).
+There is a [`twim`](https://docs.embassy.dev/embassy-nrf/git/nrf52833/twim/index.html) which provides
 support for the Two Wire Interface in master mode, which is relevant for us.
 
 ## Step 1 - Create the I2C/TWI driver
@@ -123,7 +123,7 @@ Rest of solution:
 
 You are now going to create a driver object instead of just re-using existing library code in your
 application. Go into the `src/motion_sensor.rs` file which is part of the crate library. This
-file/module is already included in `src/lib.rs` for you, but it is empty. Start by creating a empty
+file/module is already included in `src/lib.rs` for you, but it is empty. Start by creating an empty
 structure named `Accelerometer` here.
 
 Then add one field to that structure: The I2C driver you just created. You actually need a lifetime
@@ -141,11 +141,11 @@ pub struct Accelerometer<'d> {
 
 ## Step 3 - Add a constructor
 
-Add a constructor to your driver object by adding a `new` method with returns `Self`. In the most
+Add a constructor to your driver object by adding a `new` method which returns `Self`. In the most
 simple form, the constructor could simply take the I2C bus as an input argument and then create and
 return itself.
 
-However, we also want to verify that the communication with out device works properly. Sensors
+However, we also want to verify that the communication with our device works properly. Sensors
 from ST microelectronics commonly have a WHO AM I register which you can read to verify
 basic sensor communication. The value read from this register should have a fixed value that
 you can check. Your task is to add a constructor which constructs `Accelerometer`, checks the
@@ -265,6 +265,8 @@ The interaction with other registers is comparable. In general if you want to re
 you still have to use `read_write` to select the correct registers, while you can just use
 `write` if you only want to write to a register.
 
+> Intermediate solution file: `microbit-exercises/src/accelerometer_step3.rs`
+
 ## Step 4 - Configure the sensor
 
 Now you have a driver instance, but you actually want to read some sensor values. We tried
@@ -277,8 +279,8 @@ We extracted the definition of `CTRL_REG1_A` on page 47 of the datasheet for you
 ![Control Register 1](./assets/ctrl-reg-1.png)
 
 The device is in Power-Down mode on startup. This is the most important control register
-because it allows use to set the output data rate (ODR), enabling the device and
-individual axes. The datasheet specifies a 8-bit register configuration.
+because it allows us to set the output data rate (ODR), enabling the device and
+individual axes. The datasheet specifies an 8-bit register configuration.
 
 - Bits 7 down to 4 are the ODR3 to ODR0 configuration bits
 - Bit 3 is the low power enable bit
@@ -289,7 +291,7 @@ registers and then provides a convenient API to build the register value which a
 the need to write bitshifts and masks.
 
 Have a look at the examples from the [`bitbybit`](https://github.com/danlehmann/bitfield)
-crate and try to specify this registeres using `bitbybit::bitfield`. Adding `default = 0x0`
+crate and try to specify this register using `bitbybit::bitfield`. Adding `default = 0x0`
 inside proc macro attributes also adds a builder API which is useful for us while `debug` adds
 an improved `Debug` implementation. This can be combined with the
 [`arbitrary-int`](https://docs.rs/arbitrary-int/latest/arbitrary_int/index.html) library.
@@ -338,7 +340,7 @@ pub struct ControlReg1 {
 </details>
 
 Now you have everything you need to update the register. The excerpt of the datasheet also
-shows the register ID, whic his `0x20`. Add the `CtrlReg1` variant to the `Register` enumeration
+shows the register ID, which is `0x20`. Add the `CtrlReg1` variant to the `Register` enumeration
 you created before. You can now use the [builder API](https://github.com/danlehmann/bitfield#setting-all-fields-at-once-using-the-builder-syntax) on `ControlReg1` to build the target
 configuration.
 
@@ -379,6 +381,8 @@ Updated constructor:
 
 </details>
 
+> Intermediate solution file: `microbit-exercises/src/accelerometer_step4.rs`
+
 ## Step 5 - Read the raw accelerometer values
 
 Now we can read the raw sensor values. By looking at the register mapping on page 43 of the
@@ -407,10 +411,10 @@ The `_raw` suffix makes it clear that those are raw sensor values which are not 
 their own and still require some processing and conversion to proper units.
 
 What do we actually return? A simple way would be to return a `(u16, u16, u16)` tuple.
-YOu can also create a dedicated named structure and this is what we are going to do.
+You can also create a dedicated named structure and this is what we are going to do.
 
 Add a structure named `ReadoutRaw`, which has `x`, `y` and `z` public fields.
-You can add common dervies like `Debug`, `Copy`, `Clone`, `defmt::Format` as well.
+You can add common derives like `Debug`, `Copy`, `Clone`, `defmt::Format` as well.
 
 
 <details>
@@ -502,19 +506,21 @@ impl Accelerometer<'_> {
 
 </details>
 
+> Intermediate solution file: `microbit-exercises/src/accelerometer_step5.rs`
+
 ## Step 6 - Convert and read the values in the SI unit mg
 
 Those raw values are not worth much by themselves. There are some conversion steps that we
 need to do. The datasheet specifies the raw binary format as a left-adjusted signed [two-complement number](https://en.wikipedia.org/wiki/Two%27s_complement).
-There are 2 conversion steps require here:
+There are 2 conversion steps required here:
 
 1. Eliminate trailing bytes depending on the selected resolution. We specified that this device has different
    resolution rates represented by bits. We can assume normal resolution (10-bits). This means
    that our relevant value will be placed on bit positions 15 downto 6. The simplest way to
-   performing this scaling is by right-shifting by 6.
+   perform this scaling is by right-shifting by 6.
 2. Scale the result to achieve our value in SI units. The datasheet specifies the sensitivity
-   for a full scale of += 2g in mg per digit. You need to multiply the raw value with that table
-   value. However, that table value also need to lineary scale with the full scale.
+   for a full scale of +- 2g in mg per digit. You need to multiply the raw value with that table
+   value. However, that table value also needs to linearly scale with the full scale.
 
 A general formula for the acceleration which should have been provided in the datasheet but
 is not for mysterious reasons, can therefore be written as:
@@ -538,7 +544,7 @@ We would like to write our driver in a way that allows changing the resolution a
 in the future. Introduce two new enumerations which allow modelling this: A `Mode` enumeration
 and a `FullScale` enumeration in the library. The `Mode` enumeration should include the Power Down,
 Low Power, Normal and High Resolution Mode. The `FullScale` should include all full scales that this
-device supports. You can no specify enum variants with leading numbers, but you can use a
+device supports. You cannot specify enum variants with leading numbers, but you can use a
 leading underscore to allow this. In the full scale enumeration, assign the actual full scale
 value as the enum value.
 
@@ -647,7 +653,7 @@ Now add the following API methods for `Readout`:
 - `z_mg` which returns Z axis value in mg as an `i32`.
 - `xyz_mg` which returns the value of all axes in mg as a `(i32, i32, i32)`
 
-Use the formula we specified above the the methods we added to do this.
+Use the formula we specified above and the methods we added to do this.
 
 <details>
 
@@ -680,7 +686,7 @@ impl Readout {
 
 </details>
 
-Finally, we want to have a convenience method called `read` on our drier which
+Finally, we want to have a convenience method called `read` on our driver which
 returns this `Readout` structure. Add that method and re-use the `read_raw` method
 that you have already written to initialize the `raw` field of the `Readout` structure.
 You can initialize the `full_scale` and `mode` field from the cached values of the driver.
@@ -748,13 +754,13 @@ If you have done everything correctly, you should see output like this:
 ```
 
 Your acceleration values may vary slightly based on the orientation of your micro:bit. Regardless,
-you should measure an acceleration of around 1g, whic his the normal force that counteracts gravity when the
+you should measure an acceleration of around 1g, which is the normal force that counteracts gravity when the
 device rests on a surface.
 
 You can now try things like shaking the device to see how the x and y axis react to this.
 If you have something to cushion the fall, you could also do a freefall test, which should make the
 1g counter force you normally see disappear while the device is free-falling. You might also
-see spikes when the micro:bit is suddenly decelerated after hits a surface after free-falling.
+see spikes when the micro:bit is suddenly decelerated after it hits a surface after free-falling.
 
 You might wonder why an e-compass module has an accelerometer. You can actually use an accelerometer
 to account for device tilt combined with the magnetometer for the north direction measurement. This is

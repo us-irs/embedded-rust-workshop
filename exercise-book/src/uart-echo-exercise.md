@@ -14,7 +14,7 @@ pin of the microcontroller UART should be sent back to the sender via the TX pin
 
 ## The micro:bit UART interface
 
-The micro:bit v2 has a very convenient feature which allows use to talk with one of its UART
+The micro:bit v2 has a very convenient feature which allows us to talk with one of its UART
 interfaces via the USB interface you already have. Have a look at this hardware block diagram
 taken from the [website](https://tech.microbit.org/hardware/):
 
@@ -67,7 +67,7 @@ picocom -b 115200 /dev/ttyACM0
 ```
 
 Your device name might be different! It is named `/dev/ttyACM0` because that was the output of
-`ls -l /dev/serial/by-id/*`. Change this for you command if necessary.
+`ls -l /dev/serial/by-id/*`. Change this for your command if necessary.
 
 ## Connecting to the UART interface - Windows
 
@@ -76,7 +76,7 @@ There are various programs available to connect to a serial port. On Windows, yo
 name you found before.
 
 You need to use the Serial connection type and specify a speed of 115200. This could look
-something liket his:
+something like this:
 
 ![PuTTY](./assets/putty-config.png)
 
@@ -84,7 +84,7 @@ You can then open the connection to open a session connected to the serial port 
 
 ## UART hardware
 
-Before we start writing code, lets look at the hardware first.
+Before we start writing code, let's look at the hardware first.
 We mentioned that UART uses 2 physical pins. This means that two of the GPIO pins of the micro:bit
 need to be configured so they can be used by the UART hardware block for communication.
 
@@ -113,7 +113,7 @@ behind the scenes.
 
 In computing systems, processing important events in a timely manner is oftentimes done
 using [interrupts](https://en.wikipedia.org/wiki/Interrupt). A really simple analogy: When the
-door bell rings or someone calls you , you will generally drop whatever you are doing right now to
+door bell rings or someone calls you, you will generally drop whatever you are doing right now to
 open the door or answer the phone call.
 
 Mapping this analogy on a computer system, the delivery man ringing your door bell is the UART
@@ -144,7 +144,7 @@ Have a look at the [constructor documentation](https://docs.embassy.dev/embassy-
 of the buffered UART. It has 11 arguments! The driver is relatively complex, and the constructor
 is not spared from that. It allows reliable communication and exposes an elegant API though.
 
-Remember that the `Peri` type is always used for resource management types are comes from the
+Remember that the `Peri` type is always used for resource management types and comes from the
 peripheral singleton field which is named `_periphs` in our example. Remove the leading underscore,
 because we are going to use this type now.
 
@@ -155,7 +155,7 @@ all of the details here but they are mentioned for completeness.
   but the hardware allows to use instance 1 as well.
 - `timer` - The driver needs one of the hardware timer blocks to count the number of received bytes.
   You can use any unused timer instance here.
-- `ppi_ch1` - This is used to connect the UART hardware to the time hardware for byte counting. Have
+- `ppi_ch1` - This is used to connect the UART hardware to the timer hardware for byte counting. Have
   a look at the [PPI docs](https://docs.nordicsemi.com/r/bundle/ps_nrf52840/page/ppi.html) if you
   are interested in more information of this hardware feature. You can pass any unused PPI channel
   instance here.
@@ -164,11 +164,11 @@ all of the details here but they are mentioned for completeness.
   PPI channel instance here.
 - `ppi_group` - Required so that the PPI channel 2 can disable itself on certain events. You can
   pass any PPI group instance here.
-- `rxd` - This is the physical GPIO pin which shold be used as the RX pin. We figured out which pin
-  this out in a previous section.
-- `txd` - This is the physical GPIO pin which shold be used as the TX pin. We figured out which
+- `rxd` - This is the physical GPIO pin which should be used as the RX pin. We figured out which pin
+  this is in a previous section.
+- `txd` - This is the physical GPIO pin which should be used as the TX pin. We figured out which
   pin this is in a previous section.
-- `irq` - This is something embassy HAL specific. The driver relies on a interrupt handler being
+- `irq` - This is something embassy HAL specific. The driver relies on an interrupt handler being
   called for the UART. For technical reasons, that handler can not be specified in the HAL itself.
   Instead, the HAL provides a function that you should call on an interrupt, and we need to call
   this function in our own interrupt handler. However, the HAL provides a nice little macro
@@ -296,7 +296,7 @@ you can use for this purpose.
 We need a separate buffer for this again. The buffer that we already declared is used exclusively
 by the driver. You can create a new buffer similarly to the way you created the first one.
 You can use a size like 64 or 128 here. Generally, it often makes sense to determine the
-dimension based on the maxium expected packet size.
+dimension based on the maximum expected packet size.
 
 Your task is to asynchronously read into a buffer. Do a match call on the resulting
 `Result` so that you can do clean error handling as well. Keep in mind that you also need to
@@ -366,7 +366,7 @@ error handling for the `Err(e)` match arms, which could at the minimum include a
 Some interesting information: When you asynchronously call `read` and nothing is arriving on
 the RX pin, the CPU can actually do other stuff! All the reception is handled in the background
 by the dedicated interrupt handler provided by our HAL. Similarly, while you are writing
-data out asynchronously using `write` and/or `write_all`, all the driver needs to do it to
+data out asynchronously using `write` and/or `write_all`, all the driver needs to do is
 pass the address and the transfer size to the hardware. All the rest is done by the hardware
 using DMA.
 

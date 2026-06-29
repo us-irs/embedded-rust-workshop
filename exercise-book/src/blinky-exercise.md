@@ -32,7 +32,7 @@ it does.
 The `#![no_std]` directive must be used because we do not have a standard runtime on our
 microcontroller. The `#![..]` syntax applies this attribute to the whole module, which is our
 whole application in this case. A standard runtime is usually only available on a full host system, for example
-your development laptop. It usually includes components which make use of the operating systems,
+your development laptop. It usually includes components which make use of the operating system,
 for example filesystem handling, input/output libraries printing to the console, time libraries
 and much more. We do not have an operating system, so this does not exist for our target.
 
@@ -79,7 +79,7 @@ introduces hardware abstractions, data structures and objects to interact with t
 
 The nRF52833 chip which is part of the micro:bit has some initialization which makes sense for
 most firmware. This can include something like the clock initialization. When writing this HAL, it
-makes sense packaging that configuration inside some initializer function.
+makes sense to package that configuration inside some initializer function.
 
 Rust also has a nice type system which allows modelling of our problem domain. We have a
 microcontroller which has [peripherals](./terminology_glossary.md) and physical pins. We can model
@@ -97,7 +97,7 @@ method. This is what you want to use to initialize the chip. You can use the `de
 of `embassy_nrf::config::Config`, it serves our purposes for now. Have a look at the
 [documentation of the `Peripherals`](https://docs.embassy.dev/embassy-nrf/git/nrf52840/struct.Peripherals.html)
 data structure which is returned by the `init` function. It models all the peripherals and physical
-pins like we previously metioned.
+pins like we previously mentioned.
 
 Call this method and store the `Peripherals` object inside a variable called `periphs`.
 
@@ -203,7 +203,7 @@ GPIO driver to toggle the LED inside the loop. We actually told you the correct 
 If you forgot, maybe you can also figure it out from the schematic?
 
 Toggling the LED in a permanent loop would cause the LED to not be on long enough for you
-to see anything. Besides, the tasks was to make it blink with a frequency of 1 second.
+to see anything. Besides, the task was to make it blink with a frequency of 1 second.
 We need to introduce a delay. We are going to use [`embassy_time`](https://docs.rs/embassy-time/latest/embassy_time/) for this.
 
 Again, we included the dependency for you, so you can use it directly. So far, we did not have to use
