@@ -66,9 +66,9 @@ out that the SDA pin is mapped to P0.16 and the SCL pin is mapped to P0.08. Ther
 external I2C pins, but those are routed to the edge connector and are used to connect
 external devices.
 
-When it comes to writing device drivers, you generally want to wrap the driver object or some
-useful abstraction of it to talk with your device. For this device, you would wrap some
-I2C driver. We can omit some abstraction because we know that we are never going to share the bus,
+When it comes to writing device drivers, you will generally wrap the communication driver object 
+in your driver. For this device, you would wrap some I2C driver. We can omit some abstraction
+because we know that we are never going to share the bus,
 and we do not want to write a portable driver. This means we can wrap the bus driver provided
 by the HAL. Nordic uses a different name for the I2C protocol and calls it TWI (two-write interface).
 There is a [`twim`](https://docs.embassy.dev/embassy-nrf/git/nrf52833/twim/index.html) providing
@@ -122,8 +122,9 @@ Rest of solution:
 ## Step 2 - Create the basic driver object
 
 You are now going to create a driver object instead of just re-using existing library code in your
-application. Go into the `src/motion_sensor.rs` file. This file/module is already included
-in `src/lib.rs` for you, but it is empty. Start by creating a empty structure named `Accelerometer` here.
+application. Go into the `src/motion_sensor.rs` file which is part of the crate library. This
+file/module is already included in `src/lib.rs` for you, but it is empty. Start by creating a empty
+structure named `Accelerometer` here.
 
 Then add one field to that structure: The I2C driver you just created. You actually need a lifetime
 of `Accelerometer` now because the I2C driver has a lifetime as well.
@@ -141,8 +142,8 @@ pub struct Accelerometer<'d> {
 ## Step 3 - Add a constructor
 
 Add a constructor to your driver object by adding a `new` method with returns `Self`. In the most
-simple form, the constructor could simply take the I2C bus as an input argument and then creates and
-returns itself.
+simple form, the constructor could simply take the I2C bus as an input argument and then create and
+return itself.
 
 However, we also want to verify that the communication with out device works properly. Sensors
 from ST microelectronics commonly have a WHO AM I register which you can read to verify
@@ -216,7 +217,7 @@ the WHO AM I register and verify its value. From the datasheet, we can determine
 to be `0b00110011`. You can create a constant or associated constant on the `Accelerometer` object
 to store the expected value.
 
-First of all, we mentioned that you always have to pass the device address when using the I2C driver
+We mentioned that you always have to pass the device address when using the I2C driver
 API. For the accelerometer, that address has a fixed value of `0x19` that you can retrieve
 from the microbit v2 schematic or from the sensor datasheet. Create an associated constant
 `ADDR` on the `Accelerometer` driver which has that value.

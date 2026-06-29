@@ -6,3 +6,6 @@ use panic_probe as _;
 
 pub mod accelerometer;
 pub mod accelerometer_solution;
+
+pub mod board;
+pub mod led;
