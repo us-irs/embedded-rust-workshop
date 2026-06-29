@@ -27,7 +27,7 @@ There is a distinction between scheduling types:
   task to ensure the task gets done as quickly as possible. Pre-emption means that the scheduler
   will switch from the low priority tasks to the high priority task to service it as quickly
   as possible.
-- Cooperating scheduling - Each task will run until completion or until the work is done. After
+- Cooperative scheduling - Each task will run until completion or until the work is done. After
   that, the task will yield to the operating system, which means ceding control to the scheduler
   so it can start running other (higher-priority) tasks. This means that a low priority task could
   stop another high priority task from being executed in time.
@@ -46,7 +46,7 @@ and stop other tasks from running. Doing this is a bug on a pre-emptive system a
 consequences are more direct on a system like this. You could use interrupts to allow fulfilling real-time
 requirements on important tasks. However, for technical reasons, interrupt handlers must
 be regular synchronous functions. Is it possible to have pre-emptive tasks while still being
-able to use `async`? embassy provides the [InterruptExecutor](https://docs.rs/embassy-executor/latest/embassy_executor/struct.InterruptExecutor.html)
+able to use `async`? embassy provides the [`InterruptExecutor`](https://docs.rs/embassy-executor/latest/embassy_executor/struct.InterruptExecutor.html)
 feature as the answer.
 
 You can still have your regular `async` tasks, but they will now be scheduled by the interrupt mode
@@ -186,8 +186,10 @@ async fn left_button_task(mut button_a: gpiote::InputChannel<'static>) {
 ```
 </details>
 
-When you have implemented this, test this by flashing the app using `cargo run --bin multitasking-ipc`,
+When you have implemented this, test this by flashing the app using `cargo run --bin multitasking_ipc`,
 pressing the left button and observing the program output.
+
+> Intermediate solution file: `microbit-exercises/src/bin/multitasking_ipc_step1.rs`
 
 ## Step 2 - Third task scheduled by an interrupt scheduler
 
@@ -325,6 +327,8 @@ interrupt_exec_spawner.spawn(right_button_task(button_right_async)).expect("spaw
 Now verify that everything is working by running the application, pressing the right button (B)
 and observing the program output.
 
+> Intermediate solution file: `microbit-exercises/src/bin/multitasking_ipc_step2.rs`
+
 ## Step 3 - Signalling our main application
 
 One common task in complex applications is the communication between concurrent tasks. This
@@ -391,6 +395,8 @@ async fn left_button_task(mut button_a: gpiote::InputChannel<'static>) {
 
 </details>
 
+> Intermediate solution file: `microbit-exercises/src/bin/multitasking_ipc_step3.rs`
+
 ## Step 4 - Using the signal in the main task
 
 In the main task, you also have the issue that you have to perform two tasks now: Handling the
@@ -412,7 +418,7 @@ these `async` functions first.
 
 Extract the existing task which toggles the top left LED into a distinct `async` task called
 `main_led_task` first. Pass a shared reference to `RefCell<LedStrip<'a>>` to it. Also note that
-the limitation that you are now allowed to use lifetimes only applies to `async` tasks
+the limitation that you are not allowed to use lifetimes only applies to `async` tasks
 annotated by the `embassy_executor::task` macro.
 You have to update the main task and call `borrow_mut` on the wrapper driver object to actually
 retrieve and toggle the LED in the task now.
@@ -543,7 +549,9 @@ At the end of your main task:
 
 </details>
 
-You can now test this using `cargo run --bin multitasking-ipc`.
+You can now test this using `cargo run --bin multitasking_ipc`.
+
+> Intermediate solution file: `microbit-exercises/src/bin/multitasking_ipc_step4.rs`
 
 ## Step 5 - Send a message from the third task on a button press
 
@@ -625,6 +633,8 @@ async fn right_button_task(mut button_b: gpiote::InputChannel<'static>) {
 
 </details>
 
+> Intermediate solution file: `microbit-exercises/src/bin/multitasking_ipc_step5.rs`
+
 ## Step 6 - Handle blinky duration messages in main task
 
 As the final step, process the received messages by using the `receiver` method of
@@ -678,9 +688,11 @@ main loop:
 ```
 </details>
 
+> Full reference solution file: `microbit-exercises/src/bin/multitasking_ipc_solution.rs`
+
 ## Finishing Up
 
-Run `cargo run --bin multitasking-ipc` and try pressing the right button down for different
+Run `cargo run --bin multitasking_ipc` and try pressing the right button down for different
 times. You should see the blink frequency change depending on how long you pressed the button.
 
 You might have noticed that there are actually multiple ways to specify tasks. You can either
@@ -711,7 +723,7 @@ can combine it with the data structures provided
 by `embassy-sync` or with lock objects like [the embassy `Mutex`](https://docs.embassy.dev/embassy-sync/git/default/mutex/struct.Mutex.html)
 or the [`critical-section` `Mutex`](https://docs.rs/critical-section/latest/critical_section/struct.Mutex.html)
 to safely share or send data to your regular software tasks. Most `async` APIs for hardware drivers
-relies on interrupt handlers to function properly. Luckily, most modern HALs offer
+rely on interrupt handlers to function properly. Luckily, most modern HALs offer
 interrupt handlers with explicit support for `async`. `embassy` even goes one step further and
-provides a convenient macro which declares this function for you so you can not forget to call
-the function.
+provides a convenient `bind_interrupts!` macro which declares this function for you so you can not
+forget to do this.
