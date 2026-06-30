@@ -194,8 +194,9 @@ pressing the left button and observing the program output.
 ## Step 2 - Third task scheduled by an interrupt scheduler
 
 Now, we want to run a third task which is responsible for doing the same process for the
-right button. You can declare the task similarly to how you declared the second task. The only
-thing that changes when using another scheduler is how the task is spawned.
+right button, but we actually want to run it with a higher priority. We are going to use the
+interrupt scheduler for this. You can declare the task similarly to how you declared the second
+task. The only thing that changes when using another scheduler is how the task is spawned.
 
 Add the declaration of the third task which does the same logic, but for the right button
 `right_button_async`.
