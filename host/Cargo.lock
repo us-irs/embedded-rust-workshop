@@ -588,6 +588,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "microbit-models"
+version = "0.1.0"
+dependencies = [
+ "defmt",
+ "serde",
+]
+
+[[package]]
 name = "nix"
 version = "0.26.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"

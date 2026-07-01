@@ -55,6 +55,8 @@ means that all the tasks scheduled by a certain interrupt handler inherit that h
 
 ## Step 1 - Create a second task
 
+Open the `firmware/exercises/src/bin/multitasking_ipc.rs` file.
+
 The first step is to create a second task which prints something when the left user button (A)
 is pressed. We actually provided a component that you can use for this. The [InputChannel](https://docs.embassy.dev/embassy-nrf/0.10.0/nrf52833/gpiote/struct.InputChannel.html)
 can be used to listen for events on GPIO input channels, which includes voltage transitions

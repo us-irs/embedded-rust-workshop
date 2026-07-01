@@ -12,6 +12,8 @@ a brief explanation.
   program duration.
 - RAM: Volatile memory used to store your stack, heap and static variables.
 - Processor: Hardware block which executes your code.
+- Crate: Rust specific term for a library. The term crate and library might be used interchangeably
+  in this book. Library is a more general term.
 - MCU or Microcontroller: Integrates the processor, peripherals, flash, RAM and is usually
   placed on a printed circuit board as part of an embedded system.
 - Firmware: Software which interacts closely with hardware. Usually refers to the finished software
@@ -38,3 +40,11 @@ a brief explanation.
   particular hardware board, building on top of a HAL.
 - IPC - Inter-Process Communication: Mechanisms that allow concurrent tasks or processes to
   exchange data and synchronize with each other.
+- CCSDS - Consultative Committee for Space Data Systems: An international organization that develops
+  standards for space data and information systems. The CCSDS space packet protocol is a widely
+  used standard for structuring data packets in space communication systems.
+- COBS - Consistent Overhead Byte Stuffing: A data encoding technique that removes zero bytes from
+  a data stream, allowing for efficient packet framing and error recovery in communication protocols.
+- CRC - Cyclic Redundancy Check: An error-detecting code used to detect accidental changes to raw
+  data in digital networks and storage devices. It is commonly used to verify the integrity of data
+  packets in communication protocols.
