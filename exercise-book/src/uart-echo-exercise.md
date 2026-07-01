@@ -352,9 +352,10 @@ Remember that you want to send the number of bytes you actually received back, n
 
 ## Step 5 - Verifying everything works
 
-Now, after you have flashed this application using `cargo run --bin uart_echo`, you send
-anything to the MCU and it should be sent back. When you use an application like `picocom` or
-`PuTTY`, this has the side effect that it looks like you are typing on a console.
+Now, after you have flashed this application using `cargo run --bin uart_echo --release`, you send
+anything to the MCU and it should be sent back. It is recommended to use the optimized variant
+because the non-optimized code is very slow and might miss out bytes. When you use an application
+like `picocom` or `PuTTY`, this has the side effect that it looks like you are typing on a console.
 
 Test that your echo application works properly by connecting to the serial port like
 we explained earlier and typing anything. You should now see everything you type appear on

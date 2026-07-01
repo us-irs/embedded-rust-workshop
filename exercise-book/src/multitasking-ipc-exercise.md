@@ -186,7 +186,7 @@ async fn left_button_task(mut button_a: gpiote::InputChannel<'static>) {
 ```
 </details>
 
-When you have implemented this, test this by flashing the app using `cargo run --bin multitasking_ipc`,
+When you have implemented this, test this by flashing the app using `cargo run --bin multitasking_ipc --release`,
 pressing the left button and observing the program output.
 
 > Intermediate solution file: `microbit-exercises/src/bin/multitasking_ipc_step1.rs`
@@ -550,7 +550,7 @@ At the end of your main task:
 
 </details>
 
-You can now test this using `cargo run --bin multitasking_ipc`.
+You can now test this using `cargo run --bin multitasking_ipc --release`.
 
 > Intermediate solution file: `microbit-exercises/src/bin/multitasking_ipc_step4.rs`
 
@@ -693,7 +693,7 @@ main loop:
 
 ## Finishing Up
 
-Run `cargo run --bin multitasking_ipc` and try pressing the right button down for different
+Run `cargo run --bin multitasking_ipc --release` and try pressing the right button down for different
 times. You should see the blink frequency change depending on how long you pressed the button.
 
 You might have noticed that there are actually multiple ways to specify tasks. You can either

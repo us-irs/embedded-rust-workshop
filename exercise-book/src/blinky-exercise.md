@@ -21,8 +21,11 @@ You can find a full solution inside the `blinky_solution.rs` file.
 Notice that you can always build and run the current state of your solution using
 
 ```sh
-cargo run --bin blinky
+cargo run --bin blinky --release
 ```
+
+It is generally recommended to use `--release` for embedded applications because the debug image
+is very slow, which might lead to bugs when using timing-sensitive hardware like UARTs.
 
 ## Some notes on the skeleton
 
@@ -241,10 +244,10 @@ Timer::after_millis(1000).await;
 
 ## Finishing up
 
-When you run `cargo run --bin blinky`, you should see something like this:
+When you run `cargo run --bin blinky --release`, you should see something like this:
 
 ```rust
-❯ cargo run --bin blinky
+❯ cargo run --bin blinky --release
    Compiling exercises v0.1.0 (/home/muellerr/Rust/embedded-rust-workshop/microbit-code/exercises)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.11s
      Running `probe-rs run --chip nRF52833_xxAA --allow-erase-all target/thumbv7em-none-eabihf/debug/blinky_solution`
