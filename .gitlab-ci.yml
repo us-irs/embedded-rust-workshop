@@ -4,30 +4,37 @@ default:
     key: ${CI_COMMIT_REF_SLUG}
     paths:
       - .cargo
-      - target
+      - firmware/target
+      - host/target
 
 stages:
   - stage1
   - stage2
 
+.host-deps:
+  before_script:
+    - apt-get update
+    - apt-get install -y libudev-dev
+
 fmt:
   stage: stage1
   image: rust:latest
   script:
-    - cd microbit-apps && cargo fmt --check
-    - cd ../microbit-exercises && cargo fmt --check
+    - (cd firmware && cargo fmt --check)
+    - (cd host && cargo fmt --check)
 
-check-apps:
+check-fw:
   stage: stage1
   image: rust:latest
   script:
-    - cd microbit-apps && cargo check
+    - cd firmware && cargo check
 
-check-exercises:
+check-host:
   stage: stage1
   image: rust:latest
+  extends: .host-deps
   script:
-    - cd microbit-exercises && cargo check
+    - cd host && cargo check
 
 build-book:
   stage: stage1
@@ -40,30 +47,30 @@ build-book:
     paths:
       - exercise-book/book/
 
-build-apps:
+build-fw:
   stage: stage2
   image: rust:latest
   before_script:
     - cargo install flip-link
   script:
-    - cd microbit-apps && cargo build
+    - cd firmware && cargo build
 
-build-exercises:
+build-host:
   stage: stage2
   image: rust:latest
-  before_script:
-    - cargo install flip-link
+  extends: .host-deps
   script:
-    - cd microbit-exercises && cargo build
+    - cd host && cargo build
 
-clippy-apps:
+clippy-fw:
   stage: stage1
   image: rust:latest
   script:
-    - cd microbit-apps && cargo clippy
+    - cd firmware && cargo clippy
 
-clippy-exercises:
+clippy-host:
   stage: stage1
   image: rust:latest
+  extends: .host-deps
   script:
-    - cd microbit-exercises && cargo clippy
+    - cd host && cargo clippy

@@ -189,7 +189,7 @@ async fn left_button_task(mut button_a: gpiote::InputChannel<'static>) {
 When you have implemented this, test this by flashing the app using `cargo run --bin multitasking_ipc --release`,
 pressing the left button and observing the program output.
 
-> Intermediate solution file: `microbit-exercises/src/bin/multitasking_ipc_step1.rs`
+> Intermediate solution file: `firmware/exercises/src/bin/multitasking_ipc_step1.rs`
 
 ## Step 2 - Third task scheduled by an interrupt scheduler
 
@@ -328,7 +328,7 @@ interrupt_exec_spawner.spawn(right_button_task(button_right_async)).expect("spaw
 Now verify that everything is working by running the application, pressing the right button (B)
 and observing the program output.
 
-> Intermediate solution file: `microbit-exercises/src/bin/multitasking_ipc_step2.rs`
+> Intermediate solution file: `firmware/exercises/src/bin/multitasking_ipc_step2.rs`
 
 ## Step 3 - Signalling our main application
 
@@ -396,7 +396,7 @@ async fn left_button_task(mut button_a: gpiote::InputChannel<'static>) {
 
 </details>
 
-> Intermediate solution file: `microbit-exercises/src/bin/multitasking_ipc_step3.rs`
+> Intermediate solution file: `firmware/exercises/src/bin/multitasking_ipc_step3.rs`
 
 ## Step 4 - Using the signal in the main task
 
@@ -552,7 +552,7 @@ At the end of your main task:
 
 You can now test this using `cargo run --bin multitasking_ipc --release`.
 
-> Intermediate solution file: `microbit-exercises/src/bin/multitasking_ipc_step4.rs`
+> Intermediate solution file: `firmware/exercises/src/bin/multitasking_ipc_step4.rs`
 
 ## Step 5 - Send a message from the third task on a button press
 
@@ -634,7 +634,7 @@ async fn right_button_task(mut button_b: gpiote::InputChannel<'static>) {
 
 </details>
 
-> Intermediate solution file: `microbit-exercises/src/bin/multitasking_ipc_step5.rs`
+> Intermediate solution file: `firmware/exercises/src/bin/multitasking_ipc_step5.rs`
 
 ## Step 6 - Handle blinky duration messages in main task
 
@@ -689,7 +689,7 @@ main loop:
 ```
 </details>
 
-> Full reference solution file: `microbit-exercises/src/bin/multitasking_ipc_solution.rs`
+> Full reference solution file: `firmware/exercises/src/bin/multitasking_ipc_solution.rs`
 
 ## Finishing Up
 

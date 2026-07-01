@@ -1,40 +1,40 @@
 all: fmt check clippy build
 
 # fmt --format both crates
-fmt: fmt-apps fmt-exercises
+fmt: fmt-fw fmt-host
 
-fmt-apps:
-  @cd microbit-apps && cargo fmt
+fmt-fw:
+  @cd firmware && cargo fmt
 
-fmt-exercises:
-  @cd microbit-exercises && cargo fmt
+fmt-host:
+  @cd host && cargo fmt
 
 # clippy --lint both crates
-clippy: clippy-apps clippy-exercises
+clippy: clippy-fw clippy-host
 
-clippy-apps:
-	@cd microbit-apps && cargo clippy
+clippy-fw:
+	@cd firmware && cargo clippy
 
-clippy-exercises:
-	@cd microbit-exercises && cargo clippy
+clippy-host:
+	@cd host && cargo clippy
 
 # check --check both crates
-check: check-apps check-exercises
+check: check-fw check-host
 
-check-apps:
-  @cd microbit-apps && cargo check
+check-fw:
+  @cd firmware && cargo check
 
-check-exercises:
-  @cd microbit-exercises && cargo check
+check-host:
+  @cd host && cargo check
 
 # build both crates
-build: build-apps build-exercises build-book
+build: build-fw build-host build-book
 
-build-apps:
-  @cd microbit-apps && cargo build
+build-fw:
+  @cd firmware && cargo build
 
-build-exercises:
-  @cd microbit-exercises && cargo build
+build-host:
+  @cd host && cargo build
 
 build-book:
   @cd exercise-book && mdbook build
