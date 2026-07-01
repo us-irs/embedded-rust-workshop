@@ -6,8 +6,6 @@ use exercises as _;
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) -> ! {
-    let _periphs = embassy_nrf::init(embassy_nrf::config::Config::default());
-
     // TODOs
     //
     // Step 1: Initialize the hardware by using the `embassy_nrf::init` method.
