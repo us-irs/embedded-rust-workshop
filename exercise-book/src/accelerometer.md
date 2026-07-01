@@ -76,7 +76,7 @@ support for the Two Wire Interface in master mode, which is relevant for us.
 
 ## Step 1 - Create the I2C/TWI driver
 
-Open the `src/bin/motion_sensor.rs` file. Start creating the [`twim` driver](https://docs.embassy.dev/embassy-nrf/git/nrf52833/twim/struct.Twim.html) and storing it into an object named `i2c_bus`.
+Open the `src/bin/accelerometer.rs` file. Start creating the [`twim` driver](https://docs.embassy.dev/embassy-nrf/git/nrf52833/twim/struct.Twim.html) and storing it into an object named `i2c_bus`.
 We provided all required information, including the pin mapping for the SDA and SCL pin.
 The default TWI configuration provided by embassy is sufficient for our purposes. The name of
 the peripheral in the library are `TWISPI0`. You can assume that a TX RAM buffer of 16 or 32 bytes
@@ -122,7 +122,7 @@ Rest of solution:
 ## Step 2 - Create the basic driver object
 
 You are now going to create a driver object instead of just re-using existing library code in your
-application. Go into the `src/motion_sensor.rs` file which is part of the crate library. This
+application. Go into the `src/accelerometer.rs` file which is part of the crate library. This
 file/module is already included in `src/lib.rs` for you, but it is empty. Start by creating an empty
 structure named `Accelerometer` here.
 
