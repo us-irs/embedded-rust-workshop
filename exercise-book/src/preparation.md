@@ -44,7 +44,7 @@ git clone git@git.irs.uni-stuttgart.de:irs/embedded-rust-workshop.git
 ```
 
 Have a look at the README of the repository. It explains the directory structure. The
-most relevant part of the repository for you is the `microbit-exercises` folder.
+most relevant part of the repository for you is the `firmware/exercises` folder.
 
 Now that you have cloned the project, you might have to set up some software.
 
@@ -110,7 +110,7 @@ You can flash a test application now to verify the setup. We provide some test a
 Connect the board to your computer using a Micro-USB cable. Make sure that your cable also
 supports the data interface and is not power-only.
 
-Navigate into the `microbit-apps` directory.
+Navigate into the `firmware/apps` directory.
 
 Now, you can run the following command to build and flash a blinky application:
 

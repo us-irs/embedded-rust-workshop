@@ -20,6 +20,7 @@ impl From<Error> for InitError {
 
 /// Step 3 accelerometer driver with WHO_AM_I validation in the constructor.
 pub struct Accelerometer<'d> {
+    #[allow(dead_code)]
     i2c: embassy_nrf::twim::Twim<'d>,
 }
 

@@ -51,6 +51,7 @@ pub struct ControlReg1 {
 
 /// Step 4 accelerometer driver with basic CTRL_REG1 sensor configuration.
 pub struct Accelerometer<'d> {
+    #[allow(dead_code)]
     i2c: embassy_nrf::twim::Twim<'d>,
 }
 

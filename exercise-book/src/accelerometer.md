@@ -265,7 +265,7 @@ The interaction with other registers is comparable. In general if you want to re
 you still have to use `write_read` to select the correct registers, while you can just use
 `write` if you only want to write to a register.
 
-> Intermediate solution file: `microbit-exercises/src/accelerometer_step3.rs`
+> Intermediate solution file: `firmware/exercises/src/accelerometer_step3.rs`
 
 ## Step 4 - Configure the sensor
 
@@ -381,7 +381,7 @@ Updated constructor:
 
 </details>
 
-> Intermediate solution file: `microbit-exercises/src/accelerometer_step4.rs`
+> Intermediate solution file: `firmware/exercises/src/accelerometer_step4.rs`
 
 ## Step 5 - Read the raw accelerometer values
 
@@ -507,7 +507,7 @@ impl Accelerometer<'_> {
 
 </details>
 
-> Intermediate solution file: `microbit-exercises/src/accelerometer_step5.rs`
+> Intermediate solution file: `firmware/exercises/src/accelerometer_step5.rs`
 
 ## Step 6 - Convert and read the values in the SI unit mg
 

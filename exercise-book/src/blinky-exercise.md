@@ -10,7 +10,7 @@ which can be used to drive a LED.
 
 Writing a blinky also involves a timing component to achieve some blink frequency.
 
-Go into the `microbit-exercises` directory. Inside the `src/bin/blinky.rs` file, you can
+Go into the `firmware/exercises` directory. Inside the `src/bin/blinky.rs` file, you can
 find the skeleton project that you should edit to work towards the blinky application. It includes
 an explanation of the intermediate steps. Each intermediate step is explained in this document
 in detail, including an intermediate solution which you can see by expanding the detail
@@ -248,7 +248,7 @@ When you run `cargo run --bin blinky --release`, you should see something like t
 
 ```rust
 ❯ cargo run --bin blinky --release
-   Compiling exercises v0.1.0 (/home/muellerr/Rust/embedded-rust-workshop/microbit-code/exercises)
+   Compiling exercises v0.1.0 (/home/muellerr/Rust/embedded-rust-workshop/firmware/exercises)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.11s
      Running `probe-rs run --chip nRF52833_xxAA --allow-erase-all target/thumbv7em-none-eabihf/debug/blinky_solution`
       Erasing ✔ 100% [####################]  48.00 KiB @  35.91 KiB/s (took 1s)
