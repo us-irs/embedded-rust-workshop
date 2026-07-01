@@ -49,12 +49,12 @@ engineering perspective are summarized here:
   (SCL)
 - The most common I2C communication speeds are normal mode with 100 kHz and fast mode with 400 kHz.
 - I2C relies on device addressing to allow talking to a single device on a shared bus.
-- An I2C transaction can be abstracted with three operations: `read`, `write` and `read_write`.
+- An I2C transaction can be abstracted with three operations: `read`, `write` and `write_read`.
 
 The Rust embedded-hal crate provides generic traits that portable device drivers and HAL implementations
 need to agree on. You can have a look at how these basic bus properties were captured in the
 [I2C trait](https://docs.rs/embedded-hal/1.0.0/embedded_hal/i2c/trait.I2c.html). Notice how its
-API functions expect a device address and are named `read`, `write` and `read_write`.
+API functions expect a device address and are named `read`, `write` and `write_read`.
 
 We are not going to use this trait directly for this exercise, but the trait would be relevant
 if you either want to write a driver which works on multiple hardware platforms, or if you
@@ -262,7 +262,7 @@ impl Accelerometer<'_> {
 </details>
 
 The interaction with other registers is comparable. In general if you want to read registers,
-you still have to use `read_write` to select the correct registers, while you can just use
+you still have to use `write_read` to select the correct registers, while you can just use
 `write` if you only want to write to a register.
 
 > Intermediate solution file: `microbit-exercises/src/accelerometer_step3.rs`
@@ -395,9 +395,10 @@ datasheet again, we can figure out the base addresses of the sensor readout:
 - OUT_Z_L_A at 0x2C
 - OUT_Z_H_A at 0x2D
 
-As you can see, those registers are consecutive. They are also ordered in little endian
+As you can see, those registers are consecutive. The datasheet mentions that the data is provided
+as a signed two-complemented number which is left-adjusted. They are also ordered in little endian
 format, where the low byte is at the smaller memory address. This is relevant for creating
-the raw `u16` binary value from the raw bytes in the correct order.
+the raw `i16` binary value from the raw bytes in the correct order.
 
 We could perform 6 individual reads on the addresses specified above. However, the device
 has a register auto-increment feature that we can use. By setting bit 7 in the register ID
@@ -410,7 +411,7 @@ Create a `AUTO_INCREMENT_MASK` constant or associated constant and set it to `0x
 The `_raw` suffix makes it clear that those are raw sensor values which are not worth much on
 their own and still require some processing and conversion to proper units.
 
-What do we actually return? A simple way would be to return a `(u16, u16, u16)` tuple.
+What do we actually return? A simple way would be to return a `(i16, i16, i16)` tuple.
 You can also create a dedicated named structure and this is what we are going to do.
 
 Add a structure named `ReadoutRaw`, which has `x`, `y` and `z` public fields.
@@ -422,9 +423,9 @@ You can add common derives like `Debug`, `Copy`, `Clone`, `defmt::Format` as wel
 ```rust
 #[derive(Debug, defmt::Format)]
 pub struct ReadoutRaw {
-    pub x: u16,
-    pub y: u16,
-    pub z: u16,
+    pub x: i16,
+    pub y: i16,
+    pub z: i16,
 }
 ```
 
