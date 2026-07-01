@@ -94,11 +94,12 @@ to certain GPIO pins, there is a pin mapping which depends on the board design.
 
 You can either look at the [pin map](https://tech.microbit.org/hardware/schematic/) or
 the [schematic](./assets/MicroBit_V2.0.0_S_schematic.PDF) to find the GPIO pin assignment.
-Try to figure the pin mapping out on your own.
+Please note that the pin assignment in the pin map is inverted (so RX in actually TX for your driver and vice-versa) because it is done from the view of the interface MCU, not the target MCU. Try to
+figure the pin mapping out on your own.
 
 <details>
 
-The RX pin is mapped to P0.06 while the TX pin is mapped to P1.08.
+The TX target MCU pin is mapped to P0.06 while the RX target MCU pin is mapped to P1.08.
 
 </details>
 
