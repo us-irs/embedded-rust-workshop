@@ -357,7 +357,9 @@ anything to the MCU and it should be sent back. When you use an application like
 `PuTTY`, this has the side effect that it looks like you are typing on a console.
 
 Test that your echo application works properly by connecting to the serial port like
-we explained earlier and typing anything.
+we explained earlier and typing anything. You should now see everything you type appear on
+your terminal application, because your terminal app just displays what it received back
+from the MCU, which is what you typed.
 
 ## Finishing Up
 

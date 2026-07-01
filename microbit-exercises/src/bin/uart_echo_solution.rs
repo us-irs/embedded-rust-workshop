@@ -40,10 +40,13 @@ async fn main(_spawner: Spawner) -> ! {
     let mut rx_buf: [u8; 64] = [0; 64];
     loop {
         match uart_rx.read(&mut rx_buf).await {
-            Ok(read_bytes) => match uart_tx.write_all(&rx_buf[0..read_bytes]).await {
-                Ok(_) => (),
-                Err(_e) => (),
-            },
+            Ok(read_bytes) => {
+                defmt::info!("RX: {}", &rx_buf[0..read_bytes]);
+                match uart_tx.write_all(&rx_buf[0..read_bytes]).await {
+                    Ok(_) => (),
+                    Err(_e) => (),
+                }
+            }
             Err(_e) => (),
         }
     }
