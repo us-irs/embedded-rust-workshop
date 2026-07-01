@@ -186,8 +186,11 @@ to the hints you can derive from the information above.
 
 Your task is to create the driver and store it with the name `uart`.
 
-If you are struggling with figuring out how to declare the interrupt handler and create the `irq`
-argument, you can have a look at the hint:
+Embassy provides a `bind_interrupts!` which declares an interrupt handler for you, which
+is necessary for proper function of the UARTE driver. Have a look at its
+[documentation](https://docs.embassy.dev/embassy-nrf/git/nrf52833/index.html).
+Use this macro to declare an interrupt handler for the UARTE. Keep in mind that it is sufficient
+to declare an interrupt handler. The hardware takes care of calling it when required.
 
 <details>
 
