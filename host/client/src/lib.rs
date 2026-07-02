@@ -33,8 +33,7 @@ pub fn config_file_init() -> anyhow::Result<File> {
 
     let mut template = PathBuf::from(manifest_dir);
     let mut search_path = PathBuf::from(manifest_dir);
-    template.push(".cargo");
-    template.push("config.toml");
+    template.push("config.toml.template");
     search_path.push("config.toml");
     if !search_path.exists() {
         log::info!("did not find config.toml, creating from config.toml.template");

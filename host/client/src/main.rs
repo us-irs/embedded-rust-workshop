@@ -27,12 +27,35 @@ fn main() -> anyhow::Result<()> {
     })
     .unwrap();
 
-    let _cli = Cli::parse();
+    let cli = Cli::parse();
     let mut config_file =
         host_client::config_file_init().with_context(|| "config file initialization")?;
     let mut toml_str = String::new();
     config_file.read_to_string(&mut toml_str)?;
-    let _config: host_client::toml::Config = toml::from_str(&toml_str)?;
+    let config: host_client::toml::Config = toml::from_str(&toml_str)?;
+
+    let serial_port = cli.serial_port.unwrap_or(config.serial_port);
+
+    let mut serial_transport =
+        tmtc_utils::transport::serial::PacketTransportSerialCobs::new_from_params(
+            &serial_port,
+            115200,
+            4096,
+        )
+        .with_context(|| format!("opening serial port {}", serial_port))?;
+
+    loop {
+        serial_transport
+            .receive(|_packet| {
+                // TODO: Handle our decoded packets received from the firmware here.
+            })
+            .with_context(|| "serial reception failed")?;
+        if kill_signal.load(Ordering::Relaxed) {
+            log::info!("Shutting down...");
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
 
     Ok(())
 }
