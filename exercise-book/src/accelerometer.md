@@ -475,7 +475,7 @@ appropriate receive buffer size to read 6 words starting at that address.
 
 
 After you have read the 6 bytes into a raw buffer, you need to extract and convert them into
-a raw `i16` for further conversion. You can use `u16::from_le_bytes` to do this conversion.
+a raw `i16` for further conversion. You can use `i16::from_le_bytes` to do this conversion.
 
 <details>
 
@@ -497,9 +497,9 @@ impl Accelerometer<'_> {
             )
             .await?;
         Ok(ReadoutRaw {
-            x: u16::from_le_bytes([buf[0], buf[1]]),
-            y: u16::from_le_bytes([buf[2], buf[3]]),
-            z: u16::from_le_bytes([buf[4], buf[5]]),
+            x: i16::from_le_bytes([buf[0], buf[1]]),
+            y: i16::from_le_bytes([buf[2], buf[3]]),
+            z: i16::from_le_bytes([buf[4], buf[5]]),
         })
     }
 }

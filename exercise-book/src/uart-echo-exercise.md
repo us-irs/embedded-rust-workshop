@@ -329,6 +329,8 @@ to the number of received bytes. This can also be smaller than the full buffer s
 In the `Ok` arm of the match statement on the `read` call, use the [`write_all` method](https://docs.embassy.dev/embassy-nrf/git/nrf52833/buffered_uarte/struct.BufferedUarteTx.html#method.write_all) of
 `uart_tx`. You also need to import the `embedded_io_async::Write` trait for this to work.
 Remember that you want to send the number of bytes you actually received back, not the full buffer.
+Also, print everything received to the console. That way, you can actually see in the logs
+that data is arriving via the UART.
 
 
 <details>
@@ -342,6 +344,7 @@ Remember that you want to send the number of bytes you actually received back, n
                     Ok(_) => ()
                     Err(_e) => ()
                 }
+                defmt::info!("RX: {}", &rx_buf[0..read_bytes]);
             }
             Err(_e) => ()
         }
