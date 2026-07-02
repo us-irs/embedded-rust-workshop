@@ -1,3 +1,4 @@
+use client_solution as client;
 use std::{
     io::Read as _,
     sync::{
@@ -15,7 +16,9 @@ struct Cli {
     /// Serial port used for communication with the micro:bit v2
     #[arg(short, long)]
     serial_port: Option<String>,
-    // TODO: Add new commands here.
+    /// Send a ping to the device.
+    #[arg(long)]
+    ping: bool,
 }
 
 fn main() -> anyhow::Result<()> {
