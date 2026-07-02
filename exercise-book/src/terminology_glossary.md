@@ -48,3 +48,8 @@ a brief explanation.
 - CRC - Cyclic Redundancy Check: An error-detecting code used to detect accidental changes to raw
   data in digital networks and storage devices. It is commonly used to verify the integrity of data
   packets in communication protocols.
+- serde - Rust library for serialization and deserialization of Rust data structures.
+- TC - Telecommand: A packet which is a request packet and is oftentimes sent from the ground
+  to the satellite station or from the main device to a slave device.
+- TM - Telemetry: A packet which is a reply packet and is oftentimes sent from the satellite
+  to the ground station or from a slave device to the main device.

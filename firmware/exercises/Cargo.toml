@@ -9,10 +9,11 @@ embassy-time = { version = "0.5.1", features = ["defmt", "defmt-timestamp-uptime
 embassy-nrf = { version = "0.11", features = ["defmt", "nrf52833", "nfc-pins-as-gpio", "time-driver-rtc1", "unstable-pac", "time", "gpiote"] }
 embassy-sync = { version = "0.8" }
 embassy-futures = { version = "0.1" }
-static_cell = { version = "2" }
 
-defmt = "1.0.1"
-defmt-rtt = "1.0.0"
+bsp = { path = "../bsp" }
+defmt = "1"
+defmt-rtt = "1"
+static_cell = "2"
 thiserror = { version = "2", default-features = false }
 lsm303agr = { version = "1", features = ["async"] }
 
@@ -27,11 +28,3 @@ embedded-hal-bus = { version = "0.3", features = ["async"] }
 embedded-io = { version = "0.7.1", features = ["defmt"]  }
 embedded-io-async = { version = "0.7.0", features = ["defmt"] }
 portable-atomic = "1"
-
-[profile.release]
-debug = 2
-
-[package.metadata.embassy]
-build = [
-  { target = "thumbv7em-none-eabi", artifact-dir = "out/examples/nrf52840" }
-]

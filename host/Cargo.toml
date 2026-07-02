@@ -2,5 +2,6 @@
 resolver = "3"
 members = [
   "client",
-  "microbit-models-solution"
+  "microbit-models-solution",
+  "client-solution"
 ]

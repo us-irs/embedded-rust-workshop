@@ -12,11 +12,14 @@ use clap::Parser as _;
 #[derive(clap::Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
+    /// Serial port used for communication with the micro:bit v2
+    #[arg(short, long)]
     serial_port: Option<String>,
+    // TODO: Step 2 and Step 5. Add new commands here.
 }
 
 fn main() -> anyhow::Result<()> {
-    host_client::setup_logger().with_context(|| "logger setup")?;
+    client::setup_logger().with_context(|| "logger setup")?;
     println!("-- Embedded Rust Workshop host-client --");
 
     let kill_signal = Arc::new(AtomicBool::new(false));
@@ -27,12 +30,46 @@ fn main() -> anyhow::Result<()> {
     })
     .unwrap();
 
-    let _cli = Cli::parse();
+    let cli = Cli::parse();
     let mut config_file =
-        host_client::config_file_init().with_context(|| "config file initialization")?;
+        client::config_file_init().with_context(|| "config file initialization")?;
     let mut toml_str = String::new();
     config_file.read_to_string(&mut toml_str)?;
-    let _config: host_client::toml::Config = toml::from_str(&toml_str)?;
+    let config: client::toml::Config = toml::from_str(&toml_str)?;
+
+    let serial_port = cli.serial_port.unwrap_or(config.serial_port);
+
+    log::info!("Connecting to serial port: {}", serial_port);
+    let mut serial_transport =
+        tmtc_utils::transport::serial::PacketTransportSerialCobs::new_from_params(
+            &serial_port,
+            // Baudrate.
+            115200,
+            // Internal buffer size, should be the maximum expected packet size or a conservative
+            // buffer size.
+            4096,
+        )
+        .with_context(|| format!("opening serial port {}", serial_port))?;
+
+    // TODO
+    //
+    // Step 2: Handle ping CLI command and convert it to ping TC.
+    // Step 5: Add all the other TCs
+
+    loop {
+        serial_transport
+            .receive(|_packet| {
+                // TODO:
+                //
+                // Step 2: Handle our decoded packets received from the firmware here.
+            })
+            .with_context(|| "serial reception failed")?;
+        if kill_signal.load(Ordering::Relaxed) {
+            log::info!("Shutting down...");
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
 
     Ok(())
 }
