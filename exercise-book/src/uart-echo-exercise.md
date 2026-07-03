@@ -363,16 +363,6 @@ pipe that only goes from the firmware application to your host computer. You can
 it send data from your computer to the MCU. You actually need to send data via the serial
 port you figured out in the earlier chapters.
 
-> How does the logging with `defmt` actually work under the hood? We are combining `defmt`
-> and the SEGGER RTT protocol in our case. The SEGGER RTT protocol defines how logging
-> frames are sent from the target MCU to your host computer via the JTAG interface. This is
-> done using ring buffers. `probe-rs` periodically reads the log frames from the ring
-> buffers and then decoded them. `defmt` itself causes the logging fragments to be stored
-> inside the ELF file instead of your firmware. This is the reason that you always need to
-> pass the ELF file into defmt decoder applications. We passed the ELF file to probe-rs to flash
-> the application, and the tool can just pass this ELF file to the internal defmt decoding
-> calls which is a nice side-effect.
-
 Test that your echo application works properly by connecting to the serial port like
 we explained earlier and typing anything. You should now see everything you type appear on
 your terminal application, because your terminal app just displays what it received back
