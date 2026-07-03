@@ -22,6 +22,7 @@ a brief explanation.
   structure. Often, chips, sensors, and other components will be soldered on top of the PCB.
 - UART - Universal Asynchronous Receiver-Transmitter: Asynchronous serial communication interface
   that only requires two physical pins, one for transmission and one for reception.
+  [Basics of UART communication.](https://www.circuitbasics.com/basics-uart-communication/)
 - DMA - Direct Memory Access: A hardware subsystem can access the memory of a system directly
   without CPU intervention.
 - CPU - Central Processing Unit: The core hardware block of a computer or microcontroller that
@@ -29,11 +30,13 @@ a brief explanation.
 - HAL - Hardware Abstraction Layer: High level library providing drivers for the hardware blocks
   on a microcontroller.
 - I2C - Inter-Integrated Circuit: Communication bus commonly used on embedded systems.
+  [Basics of the I2C communication.](https://www.circuitbasics.com/basics-of-the-i2c-communication-protocol/)
 - TWI - Two-Wire Interface: Another name for I2C that vendors sometimes use.
 - GPIO - General Purpose Input/Output: A digital signal pin on a microcontroller that can be
   configured as an input to read a digital level or as an output to set a digital level.
 - SPI - Serial Peripheral Interface: A synchronous serial communication bus commonly used on
   embedded systems, typically requiring four signals: clock, chip select, MOSI and MISO.
+  [Basics of SPI communication.](https://www.circuitbasics.com/basics-of-the-spi-communication-protocol/)
 - RTT - Real-Time Transfer: A SEGGER protocol for transferring data between a host computer and
   an embedded target, commonly used for logging output during development.
 - BSP - Board Support Package: A library that provides drivers and abstractions specific to a

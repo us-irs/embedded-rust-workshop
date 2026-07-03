@@ -127,6 +127,16 @@ defmt::println!("-- micro:bit Blinky application --");
 
 </details>
 
+> How does the logging with `defmt` actually work under the hood? We are combining `defmt`
+> and the SEGGER RTT protocol in our case. The SEGGER RTT protocol defines how logging
+> frames are sent from the target MCU to your host computer via the JTAG interface. This is
+> done using ring buffers. The flasher app `probe-rs` periodically reads the log frames from the
+> ring buffers and then decodes them. `defmt` itself causes the logging fragments to be stored
+> inside the ELF file instead of your firmware. This is the reason that you always need to
+> pass the ELF file into defmt decoder applications. We passed the ELF file to `probe-rs` to flash
+> the application, and the tool can just pass this ELF file to the internal `defmt` decoding routine
+> which is a nice side-effect.
+
 ## Third step: Creating the GPIO drivers
 
 Before we talk about creating the GPIO drivers for switching the LED, let's talk about the
