@@ -8,10 +8,12 @@ Furthermore, we also need to exchange our data structures frequently. For exampl
 might want to send various parameters inside the telecommands, while the on-board software
 might need to send something like sensor data back to the ground station.
 The generic term used for converting your data structures into raw bytes and vice-versa is called
-Serialization and Deserialization. 
+Serialization and Deserialization.
 
 In this exercise, you are going to learn about some proven ways to perform serialization and
-deserialization of data in addition to using a really simple binary protocol stack.
+deserialization of data in addition to using a really simple binary protocol stack. We will use
+the serial UART interface from the earlier exercise for the communication between the host computer
+and the micro:bit v2.
 
 ## Serialization and Deserialization
 
@@ -31,7 +33,7 @@ which is a bit easier for humans to interpret. Packing your data like this is re
 This serialization scheme we showed above is also interoperable with other programming languages.
 However, it still has some disadvantages:
 
-- You might have to swap the bytes to ensure MSB comes first if you have something like a 
+- You might have to swap the bytes to ensure MSB comes first if you have something like a
   [little endian](https://en.wikipedia.org/wiki/Endianness) CPU architecture. It might not be
   sufficient to simply copy your primitive data into a buffer because the bytes in your RAM might
   have a different layout than the one you want in your buffer.
@@ -264,13 +266,15 @@ the accelerometer data, but we actually have not defined a model for this type y
 Define an `AccelerometerData` structure which has 3 `i16` fields with the value in mg SI-units
 for each axis first. Include all the derive attributes shown above as well.
 
+<details>
+
 ```rust
 #[derive(Debug, Copy, Clone, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct AccelerometerData {
-    x_mg: i16,
-    y_mg: i16,
-    z_mg: i16
+    pub x_mg: i16,
+    pub y_mg: i16,
+    pub z_mg: i16
 }
 ```
 </details>
@@ -294,3 +298,295 @@ We have now modelled everything that we require!
 > You can find the intermediate solution inside `host/microbit-models-solution`.
 
 ## Step 2 - Sending a ping command from the host client
+
+One common solution for writing client application that we use to talk to our boards was to write
+them in Python for various reasons:
+
+- Massive library support
+- Easy to learn and write
+- Many students already know Python
+
+However, with Rust, we now have an alternative which is actually viable as well! It has excellent
+library support and is well suited for writing command line applications. Furthermore, we
+mentioned that we need some Rust component to process our `serde` serialized payloads. The easiest
+solution is to write the client application in Rust as well.
+
+Writing this client from scratch would exceed the scope of this workshop, so we provided a
+starter client app for you where you only need to add minor additions.
+However, we are going to walk through the most important components so that you understand what
+is going on. This is useful if you want to port this app or adopt some of the patterns for
+your own client app.
+
+Go into the `host/client` app. This app will actually run on your computer, and that is why it is
+in the `host` folder. Let's go through this file and figure out what is going on.
+
+We are using the [`clap`](https://docs.rs/clap/latest/clap/) library, which is the most popular
+Rust library for command line argument processing. It provides an excellent `derive` based
+API. Have a look at the following structure:
+
+```rust
+#[derive(clap::Parser)]
+#[command(version, about, long_about = None)]
+struct Cli {
+    /// Serial port used for communication with the micro:bit v2
+    #[arg(short, long)]
+    serial_port: Option<String>,
+    // TODO: Step 2 and Step 5. Add new commands here.
+}
+```
+
+You can now supply the serial port to the client app with the `-s <port>` or `--serial-port <port>`.
+The argument is optional for a reason we will explain later. You can easily extend this structure
+by adding your own arguments. We want a `--ping` argument which should just send a ping to
+the firmware. Add that argument. We do not need the `short` format here, but you can add it
+if you want to allow `-p` for pinging as well. Have a look at the [flag argument docs](https://docs.rs/clap/latest/clap/_derive/_tutorial/index.html#flags)
+if you are struggling.
+
+<details>
+
+```rust
+#[derive(clap::Parser)]
+#[command(version, about, long_about = None)]
+struct Cli {
+    /// Serial port used for communication with the micro:bit v2
+    #[arg(short, long)]
+    serial_port: Option<String>,
+    // TODO: Step 2 and Step 5. Add new commands here.
+    #[arg(long)]
+    ping: bool
+}
+```
+</details>
+
+The main function looks like this.
+
+```rust
+fn main() -> anyhow::Result<()> {
+    // (...)
+}
+```
+
+We are using the [`anyhow`](https://docs.rs/anyhow/latest/anyhow/) library. This is one of the best
+libraries available when it comes to simplifying the error handling for applications.
+A lot of error handling in host applications boils down to using `Result<T, String>` to provide
+human readable error handling. `anyhow` supports this style of error handling.
+
+The following line:
+
+```rust
+    client::setup_logger().with_context(|| "logger setup")?;
+```
+
+sets up the logger. We are using the [`fern` library](https://docs.rs/fern/latest/fern/).
+There are a lot more logging libraries out there. [This list](https://docs.rs/log/latest/log/#available-logging-implementations)
+provides alternatives, but `fern` has proven well for us. The `with_context` suffix function
+is provided by `anyhow` and allows to add additional context to the error message if the function
+fails. The `?` then bubbles up the application error to the main function which will then print
+the error message and exit the application.
+
+The following code is useful for properly handling Ctrl+C kill signals.
+
+```rust
+    let kill_signal = Arc::new(AtomicBool::new(false));
+    let ctrlc_kill_signal = kill_signal.clone();
+    ctrlc::set_handler(move || {
+        log::info!("Received Ctrl+C, shutting down...");
+        ctrlc_kill_signal.store(true, Ordering::Relaxed);
+    })
+    .unwrap();
+```
+
+The kill signal can be used by other application parts to detect an app shutdown initiated by
+the user.
+
+The following code handles command line argument and configuration file parsing:
+
+```rust
+    let cli = Cli::parse();
+    let mut config_file =
+        client::config_file_init().with_context(|| "config file initialization")?;
+    let mut toml_str = String::new();
+    config_file.read_to_string(&mut toml_str)?;
+    let config: client::toml::Config = toml::from_str(&toml_str)?;
+```
+
+We are using the `toml` library to parse a `config.toml` file inside the client directory.
+You can specify the serial port inside this file, for example by providing the following content
+in this file:
+
+```toml
+serial_port = "/dev/ttyACM0"
+```
+
+Considering that the serial port generally stays the same on the same computer and USB port, this
+avoids the need of always needing to pass the `--serial-port` argument. You could also extend
+and use this mechanism for other information like IP addresses.
+
+Let's continue with the next section:
+
+```rust
+    let serial_port = cli.serial_port.unwrap_or(config.serial_port);
+
+    log::info!("Connecting to serial port: {}", serial_port);
+    let mut serial_transport =
+        tmtc_utils::transport::serial::PacketTransportSerialCobs::new_from_params(
+            &serial_port,
+            // Baudrate.
+            115200,
+            // Internal buffer size, should be the maximum expected packet size or a conservative
+            // buffer size.
+            4096,
+        )
+        .with_context(|| format!("opening serial port {}", serial_port))?;
+```
+
+The serial port is determined here. The CLI argument actually overrides the configuration
+from the config file here if it is provided.
+
+We have provided a communication abstraction which takes care of a lot of boilerplate tasks for
+you:
+
+- It encodes your telecommand (TC) packet with the COBS protocol. This is provided by the `send`
+  method.
+- It provides an API which scans the serial reception buffer of your OS and tries to find COBS
+  encoded packets. If it finds encoded packets, it decoded them and passed them to a user
+  provided closure (function). This is provided by the `receive` method.
+
+Let's go through the final section of the client:
+
+```rust
+    // TODO
+    //
+    // Step 2: Handle ping CLI command and convert it to ping TC.
+    // Step 5: Add all the other TCs
+
+    loop {
+        serial_transport
+            .receive(|_packet| {
+                // TODO:
+                //
+                // Step 2: Handle our decoded packets received from the firmware here.
+            })
+            .with_context(|| "serial reception failed")?;
+        if kill_signal.load(Ordering::Relaxed) {
+            log::info!("Shutting down...");
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+
+```
+
+The aforementioned `receive` method is called in a loop. The packet argument is a packet
+which was already decoded for you.
+
+The `ping` flag argument is a boolean field of the `cli` object. However, how do we actually
+create the packet format that we have shown above?
+
+Import the models library first by adding
+
+```rust
+use microbit_models as models;
+```
+
+at the top of your `main.rs` file of the client.
+
+We are going to create a telecommand (TC) creator function. Create a function named `create_tc`. We are going to use
+the [`spacepackets` library](https://docs.rs/spacepackets/latest/spacepackets/index.html) to make
+our job easier. Have a look at the documentation of the
+[CcsdsPacketCreatorOwned::new_tc_with_checksum](https://docs.rs/spacepackets/latest/spacepackets/struct.CcsdsPacketCreatorOwned.html#method.new_tc_with_checksum). This is the most suitable API for creating the
+packet. It expects the `SpHeader` abstraction. The best API is the [`new_from_apid` constructor](https://docs.rs/spacepackets/latest/spacepackets/type.SpHeader.html#method.new_from_apid).
+
+However, what application process ID do we actually want to use? We simply decided to use the value
+0x01. It makes sense to create a constant in the models library for this. Go to the `microbit-models/src/lib.rs`
+file and add an APID constant. You need to add the following line in the `Cargo.toml` of the models
+library first:
+
+```toml
+[dependencies]
+arbitrary-int = "2"
+```
+
+Then you can create the APID constant using the `u11` type. This encodes that the maximum value
+for the APID is limited by 11 bits (2047).
+
+<details>
+
+```rust
+pub const APID: u11 = u11::new(0x01);
+```
+</details>
+
+We also need to create the payload somehow. We mentioned that this is a `serde` and `postcard`
+serialized payload. Add a `request` input argument to your `create_tc` function which has
+the `models::request::Request` type.
+
+The [`postcard::to_allocvec`](https://docs.rs/postcard/latest/postcard/fn.to_allocvec.html) is the
+best API on a host system to serialize the request type. You can use it to create the payload
+of the packet.
+
+With all of this information, try to write the whole `create_tc` packet. You can `anyhow` to
+perform the error handling, so you should return `anyhow::Result<CcsdsPacketCreatorOwned>`
+
+Intermediate solution, `create_tc` prototype:
+
+<details>
+
+```rust
+pub fn create_tc(request: models::request::Request) -> anyhow::Result<CcsdsPacketCreatorOwned> {
+    //(...)
+}
+
+```
+</details>
+
+Intermediate solution, generation of request payload:
+
+<details>
+
+```rust
+pub fn create_tc(request: models::request::Request) -> anyhow::Result<CcsdsPacketCreatorOwned> {
+    let request_raw = postcard::to_allocvec(&request).unwrap();
+    // (...)
+}
+```
+</details>
+
+Full solution for function:
+
+<details>
+
+```rust
+pub fn create_tc(request: models::request::Request) -> anyhow::Result<CcsdsPacketCreatorOwned> {
+    let request_raw = postcard::to_allocvec(&request).unwrap();
+    CcsdsPacketCreatorOwned::new_with_checksum(
+        SpHeader::new_from_apid(models::APID),
+        spacepackets::PacketType::Tc,
+        &request_raw,
+    )
+    .with_context(|| "creating TC packet")
+}
+```
+</details>
+
+Now you have everything you require to create the TC and send it via the `send` function of the
+serial interface. You can convert `CcsdsPacketCreatorOwned` to a raw packet using the `to_vec`
+method. Send a ping request if `cli.ping` is `true`.
+
+<details>
+
+```rust
+    if cli.ping {
+        let tc = create_tc(models::request::Request::Ping).with_context(|| "creating ping TC")?;
+        serial_transport
+            .send(&tc.to_vec())
+            .with_context(|| "sending ping TC")?;
+    }
+```
+</details>
+
+## Step 3 - Processing telemetry in the client
+
+## Step 4 - Extract the requests from the UART data stream inside the firmware
+
+## Step 5 - Process requests and send telemetry inside the firmware

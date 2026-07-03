@@ -56,6 +56,26 @@ means that all the tasks scheduled by a certain interrupt handler inherit that h
 ## Step 1 - Create a second task
 
 Open the `firmware/exercises/src/bin/multitasking_ipc.rs` file.
+In this task, we have provided a mini board support package (BSP) for you which provides a LED strip
+driver for you.
+
+The following line:
+
+```rust
+let mut board = bsp::Microbit::default();
+```
+
+calls the `embassy-nrf` initializer function, but only packages the relevant peripheral set into a
+`Microbit` structure. A BSP is usually the correct place to provide board specific abstractions,
+so the `Microbit` structure contains a `SimpleLedMatrix` object which can be used to
+retrieve a LED line driver object, which is done here for you:
+
+```rust
+    let mut line_strip = board
+        .display
+        .line_strip(0)
+        .expect("line strip 0 should exist");
+```
 
 The first step is to create a second task which prints something when the left user button (A)
 is pressed. We actually provided a component that you can use for this. The [InputChannel](https://docs.embassy.dev/embassy-nrf/0.10.0/nrf52833/gpiote/struct.InputChannel.html)

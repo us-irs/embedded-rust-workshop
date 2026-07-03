@@ -1,0 +1,27 @@
+[package]
+name = "packet-exercise"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cortex-m-rt = "0.7"
+
+embassy-executor = { version = "0.10", features = ["platform-cortex-m", "executor-thread", "executor-interrupt", "defmt"] }
+embassy-time = { version = "0.5", features = ["defmt", "defmt-timestamp-uptime"] }
+embassy-nrf = { version = "0.11", features = ["defmt", "nrf52833", "nfc-pins-as-gpio", "time-driver-rtc1", "unstable-pac", "time", "gpiote"] }
+embassy-sync = { version = "0.8" }
+embassy-futures = { version = "0.1" }
+
+defmt = "1"
+panic-probe = { version = "1" }
+defmt-rtt = "1"
+lsm303agr = { version = "1", features = ["async"] }
+embedded-io-async = { version = "0.7", features = ["defmt"] }
+cobs = { version = "0.5", default-features = false }
+heapless = { version = "0.9" }
+spacepackets = { version = "0.17", default-features = false, features = ["defmt"] }
+serde = { version = "1", default-features = false }
+postcard = { version = "1", features = ["use-defmt"], default-features = false }
+
+bsp = { path = "../bsp" }
+microbit-models-solution = { path = "../../host/microbit-models-solution", features = ["defmt"] }

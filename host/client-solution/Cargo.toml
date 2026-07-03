@@ -1,19 +1,22 @@
 [package]
-name = "client"
+name = "client-solution"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
 serialport = "4"
 toml = "0.9"
-serde = { version = "1", features = ["derive"] }
 ctrlc = "3"
 spacepackets = { version = "0.17" }
-tmtc-utils = { git = "https://egit.irs.uni-stuttgart.de/rust/tmtc-utils.git", version = "0.1" }
 postcard = { version = "1", features = ["alloc"] }
 anyhow = "1"
 cobs = "0.5"
 fern = "0.7"
 humantime = "2"
 log = "0.4"
+arbitrary-int = "2"
+
+tmtc-utils = { git = "https://egit.irs.uni-stuttgart.de/rust/tmtc-utils.git", version = "0.1" }
+microbit-models-solution = { path = "../microbit-models-solution" }

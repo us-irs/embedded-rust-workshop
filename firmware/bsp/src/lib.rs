@@ -1,3 +1,6 @@
+#![no_std]
+pub mod led;
+
 use embassy_nrf::{Peri, peripherals};
 
 use crate::led::SimpleLedMatrix;
@@ -53,10 +56,10 @@ pub struct Microbit {
     /// Internal I2C/TWI SDA to accelerometer & debug MCU
     pub i2c_int_sda: Peri<'static, peripherals::P0_16>,
 
-    /// UART TX to debug MCU
-    pub uart_int_tx: Peri<'static, peripherals::P1_08>,
-    /// UART RX to debug MCU
-    pub uart_int_rx: Peri<'static, peripherals::P0_06>,
+    /// UART RX of the MCU
+    pub uart_rx: Peri<'static, peripherals::P1_08>,
+    /// UART TX of the MCU
+    pub uart_tx: Peri<'static, peripherals::P0_06>,
 
     /// SPI0/I2C0 peripheral
     pub twispi0: Peri<'static, peripherals::TWISPI0>,
@@ -78,6 +81,10 @@ pub struct Microbit {
     pub ppi_ch0: Peri<'static, peripherals::PPI_CH0>,
     /// PPI channel 1
     pub ppi_ch1: Peri<'static, peripherals::PPI_CH1>,
+    /// PPI group 0
+    pub ppi_group0: Peri<'static, peripherals::PPI_GROUP0>,
+    /// PPI group 1
+    pub ppi_group1: Peri<'static, peripherals::PPI_GROUP1>,
     /// Random number generator
     pub rng: Peri<'static, peripherals::RNG>,
     /// Analog digital converter
@@ -120,8 +127,8 @@ impl Microbit {
             p20: p.P1_00,
             i2c_int_scl: p.P0_08,
             i2c_int_sda: p.P0_16,
-            uart_int_tx: p.P1_08,
-            uart_int_rx: p.P0_06,
+            uart_rx: p.P1_08,
+            uart_tx: p.P0_06,
             ppi_ch0: p.PPI_CH0,
             ppi_ch1: p.PPI_CH1,
             twispi0: p.TWISPI0,
@@ -138,6 +145,8 @@ impl Microbit {
             gpiote_ch1: p.GPIOTE_CH1,
             gpiote_ch2: p.GPIOTE_CH2,
             gpiote_ch3: p.GPIOTE_CH3,
+            ppi_group0: p.PPI_GROUP0,
+            ppi_group1: p.PPI_GROUP1,
         }
     }
 }
@@ -147,3 +156,6 @@ impl Default for Microbit {
         Self::new(Default::default())
     }
 }
+
+#[cfg(test)]
+mod tests {}

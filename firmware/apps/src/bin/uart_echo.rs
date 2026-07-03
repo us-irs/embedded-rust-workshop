@@ -21,7 +21,7 @@ async fn main(_spawner: Spawner) -> ! {
 
     defmt::println!("-- micro:bit v2 UART echo application --");
     let mut uarte_config = uarte::Config::default();
-    uarte_config.baudrate = Baudrate::BAUD115200;
+    uarte_config.baudrate = Baudrate::Baud115200;
     let mut driver_rx_buf: [u8; 256] = [0; 256];
     let mut driver_tx_buf: [u8; 256] = [0; 256];
     let uart = buffered_uarte::BufferedUarte::new(

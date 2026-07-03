@@ -3,13 +3,13 @@
 
 use core::cell::RefCell;
 
+use bsp::led::LedStrip;
 use embassy_executor::Spawner;
 use embassy_nrf::{gpio, gpiote, interrupt};
 use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
 use embassy_sync::signal::Signal;
 use embassy_time::{Duration, Timer};
-use exercises::led::LedStrip;
-use exercises::{self as _, board};
+use exercises as _;
 
 static INTERRUPT_EXECUTOR: embassy_executor::InterruptExecutor =
     embassy_executor::InterruptExecutor::new();
@@ -32,7 +32,7 @@ impl BlinkState {
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) -> ! {
-    let mut board = board::Microbit::default();
+    let mut board = bsp::Microbit::default();
 
     defmt::println!("-- micro:bit multitasking and IPC application --");
     let line_strip = board
