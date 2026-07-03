@@ -46,6 +46,15 @@ git clone git@git.irs.uni-stuttgart.de:irs/embedded-rust-workshop.git
 Have a look at the README of the repository. It explains the directory structure. The
 most relevant part of the repository for you is the `firmware/exercises` folder.
 
+It is recommended that you create your own private branch as you progress through the exercises.
+For example, you can use
+
+```console
+git switch -c my-exercise-branch
+```
+
+to create your own exercise branch.
+
 Now that you have cloned the project, you might have to set up some software.
 
 ## Rust and `cargo`
@@ -91,6 +100,28 @@ probe-rs --version
 
 Finally, if you are on Linux, you need to perform some steps related to `udev` to avoid permission
 issues. `probe-rs` has a [page with steps you can follow](https://probe.rs/docs/getting-started/probe-setup/).
+
+## WSL setup
+
+If you use Windows + WSL, you need to perform some specific steps to allow using a USB device
+from WSL. The following [page](https://learn.microsoft.com/en-us/windows/wsl/connect-usb) contains
+more detailed descriptions.
+
+TLDR steps:
+
+1. Install USBPID in PowerShell
+
+    ```console
+    winget install --interactive --exact dorssel.usbipd-win
+    ```
+2. Reboot PC
+3. Detect the device using `usbipd list` inside PowerShell and determine the bus ID.
+4. Attach the USB to WSL using (in this case, bus ID was determined to be 2-4)
+
+    ```console
+    usbipd attach --wsl --busid 2-4
+    ```
+5. Now you can create a WSL shell and use `lsusb` to check for the USB device.
 
 ## IDE
 
