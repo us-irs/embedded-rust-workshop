@@ -85,7 +85,7 @@ fn main() -> anyhow::Result<()> {
         serial_transport
             .receive(
                 |packet| match CcsdsPacketReader::new_with_checksum(packet) {
-                    Ok(packet) => match parse_response::<models::response::Response>(packet) {
+                    Ok(packet) => match parse_response(packet) {
                         Ok(response) => {
                             log::info!("RX response: {:?}", response);
                         }
@@ -119,15 +119,9 @@ pub fn create_tc(request: models::request::Request) -> anyhow::Result<CcsdsPacke
     .with_context(|| "creating TC packet")
 }
 
-pub fn parse_response<Response: serde::de::DeserializeOwned>(
-    reader: CcsdsPacketReader,
-) -> postcard::Result<Response> {
+pub fn parse_response(reader: CcsdsPacketReader) -> anyhow::Result<models::response::Response> {
     let user_data = reader.packet_data();
-    let response = postcard::take_from_bytes::<Response>(user_data);
-    if let Err(e) = response {
-        log::error!("Failed to parse TM response: {}", e);
-        return Err(e);
-    }
-    let (response, _remainder) = response.unwrap();
+    let response = postcard::from_bytes::<models::response::Response>(user_data)
+        .with_context(|| "parsing TM response")?;
     Ok(response)
 }

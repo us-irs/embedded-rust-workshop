@@ -587,6 +587,122 @@ method. Send a ping request if `cli.ping` is `true`.
 
 ## Step 3 - Processing telemetry in the client
 
+We are now able to send requests to the firmware, but we also have to add telemetry handling to
+the client. Every payload we receive is represented by the `models::response::Response` type.
+
+The first thing you can do is to create a function called `parse_response` which expects
+a `spacepackets::CcsdsPacketReader` as input and returns a
+`anyhow::Result<models::response::Response>`.
+
+Create the function prototype first.
+
+<details>
+
+```rust
+pub fn parse_response(
+    reader: CcsdsPacketReader,
+) -> anyhow::Result<models::response::Response> {
+    todo!();
+}
+```
+</details>
+
+The `reader` object has a function called `packet_data` that you can use to extract the actual
+packet data payload from the full packet.
+Then, you can parse the response by using the `postcard::from_bytes` API.
+Use `with_context(|| "my error text")?` to return an `anyhow::Error` on a postcard error.
+
+<details>
+
+```rust
+pub fn parse_response(
+    reader: CcsdsPacketReader,
+) -> anyhow::Result<models::response::Response> {
+    let user_data = reader.packet_data();
+    let response = postcard::from_bytes(user_data).with_context(|| "parsing TM response")?;
+    Ok(response)
+}
+```
+</details>
+
+Next, we have to update the `receive` method content to handle the raw decoded frames.
+The `CcsdsPacketReader::new_with_checksum` allows to create a packet reader from the raw byte
+representation, assuming that a 16-bit checksum is present at the end of the packet.
+
+Inside the packet handling closure of the `receive` call, use and match on this function.
+In the `Ok(..)` arm, call the `parse_response` method we created earlier.
+On the error arm, print some error using the `log` library.
+
+<details>
+
+```rust
+    loop {
+        serial_transport
+            .receive(
+                |packet| match CcsdsPacketReader::new_with_checksum(packet) {
+                    Ok(packet) => match parse_response(packet) {
+                        Ok(response) => todo!(),
+                        Err(e) => todo!()
+                    },
+                    Err(e) => {
+                        log::error!("Failed to read packet: {:?}", e);
+                    }
+                },
+            )
+            .with_context(|| "serial reception failed")?;
+        if kill_signal.load(Ordering::Relaxed) {
+            log::info!("Shutting down...");
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+
+```
+</details>
+
+As the final step, simply print the response using the `log` library. We implemented `Debug` on
+the response structure. We could even implement `Display` for an even better human readable
+structure, but the `Debug` implementation is okay for now.
+
+For the error arm, print some suitable error message and the error itself.
+
+<details>
+
+```rust
+    loop {
+        serial_transport
+            .receive(
+                |packet| match CcsdsPacketReader::new_with_checksum(packet) {
+                    Ok(packet) => match parse_response(packet) {
+                        Ok(response) => {
+                            log::info!("RX response: {:?}", response);
+                        }
+                        Err(e) => {
+                            log::error!("Failed to parse response: {:?}", e);
+                        }
+                    },
+                    Err(e) => {
+                        log::error!("Failed to read packet: {:?}", e);
+                    }
+                },
+            )
+            .with_context(|| "serial reception failed")?;
+        if kill_signal.load(Ordering::Relaxed) {
+            log::info!("Shutting down...");
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+```
+</details>
+
+With that, we have a basic client we can use to send telecommands and handle telemetry.
+
+You can now use the `cargo run -- --help` command to display the help text for your command line
+application or the `cargo run -- --ping` command to send a ping.
+The client will always go to a listener mode after it has done all TC handling, where it
+periodically scans for telemetry packets and prints them.
+
 ## Step 4 - Extract the requests from the UART data stream inside the firmware
 
 ## Step 5 - Process requests and send telemetry inside the firmware
