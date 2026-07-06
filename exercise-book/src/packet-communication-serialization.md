@@ -465,7 +465,7 @@ Let's go through the final section of the client:
             .receive(|_packet| {
                 // TODO:
                 //
-                // Step 2: Handle our decoded packets received from the firmware here.
+                // Step 3: Handle our decoded telemetry packets received from the firmware here.
             })
             .with_context(|| "serial reception failed")?;
         if kill_signal.load(Ordering::Relaxed) {
@@ -591,8 +591,8 @@ We are now able to send requests to the firmware, but we also have to add teleme
 the client. Every payload we receive is represented by the `models::response::Response` type.
 
 The first thing you can do is to create a function called `parse_response` which expects
-a `spacepackets::CcsdsPacketReader` as input and returns a
-`anyhow::Result<models::response::Response>`.
+a [`spacepackets::CcsdsPacketReader`](https://docs.rs/spacepackets/latest/spacepackets/struct.CcsdsPacketReader.html)
+as input and returns a `anyhow::Result<models::response::Response>`.
 
 Create the function prototype first.
 
@@ -609,8 +609,10 @@ pub fn parse_response(
 
 The `reader` object has a function called `packet_data` that you can use to extract the actual
 packet data payload from the full packet.
-Then, you can parse the response by using the `postcard::from_bytes` API.
-Use `with_context(|| "my error text")?` to return an `anyhow::Error` on a postcard error.
+Then, you can parse the response by using the [`postcard::from_bytes`](https://docs.rs/postcard/latest/postcard/fn.from_bytes.html) API.
+Use `with_context(|| "my error text")?` to return an `anyhow::Error` on a postcard error. You
+need to import the [`anyhow::Context` trait](https://docs.rs/anyhow/latest/anyhow/trait.Context.html)
+for this to work.
 
 <details>
 
@@ -626,7 +628,7 @@ pub fn parse_response(
 </details>
 
 Next, we have to update the `receive` method content to handle the raw decoded frames.
-The `CcsdsPacketReader::new_with_checksum` allows to create a packet reader from the raw byte
+The [`CcsdsPacketReader::new_with_checksum`](https://docs.rs/spacepackets/latest/spacepackets/struct.CcsdsPacketReader.html#method.new_with_checksumhttps://docs.rs/spacepackets/latest/spacepackets/struct.CcsdsPacketReader.html#method.new_with_checksum) allows to create a packet reader from the raw byte
 representation, assuming that a 16-bit checksum is present at the end of the packet.
 
 Inside the packet handling closure of the `receive` call, use and match on this function.

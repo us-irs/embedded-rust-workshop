@@ -61,7 +61,7 @@ fn main() -> anyhow::Result<()> {
             .receive(|_packet| {
                 // TODO:
                 //
-                // Step 2: Handle our decoded packets received from the firmware here.
+                // Step 3: Handle our decoded telemetry packets received from the firmware here.
             })
             .with_context(|| "serial reception failed")?;
         if kill_signal.load(Ordering::Relaxed) {
