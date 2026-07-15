@@ -8,6 +8,7 @@ use embassy_nrf::{buffered_uarte, peripherals, twim, uarte};
 use embassy_sync::{blocking_mutex::raw::ThreadModeRawMutex, signal::Signal};
 use embassy_time::{Delay, Duration, Timer};
 use microbit_models_solution as models;
+
 use packet_exercise as _;
 use spacepackets::CcsdsPacketReader;
 
@@ -76,18 +77,20 @@ async fn main(spawner: Spawner) -> ! {
 
     spawner.spawn(led_task(board.display).expect("spawning led_task failed"));
 
-    let mut rx_buf: [u8; 1024] = [0; 1024];
-    let mut cobs_decoder: CobsDecoderHeapless<1024> = CobsDecoderHeapless::new();
-    // Step 2 (Done)
+    // Step 4 (Done)
     //
-    // 1. Parse for COBS encoded frames
+    // 1. Parse for COBS encoded frames using the
+    //    [CobsDecoderHeapless](https://docs.rs/cobs/latest/cobs/struct.CobsDecoderHeapless.html)
+    //    structure.
     // 2. Try to interpret the frame as a CCSDS packet, using the spacepackets::CcsdsPacketReader
     // 3. Parse the contained models::request::Request structure
     // 4. Match on the request structure. Do not handle the requests yet.
+    let mut rx_buf: [u8; 1024] = [0; 1024];
+    let mut cobs_decoder: CobsDecoderHeapless<1024> = CobsDecoderHeapless::new();
 
     // TODO:
     //
-    // Step 3
+    // Step 5
     //
     // 1. Re-factor the code to push the detected request into a heapless vector of requests
     // 2. Handle the list of requests after having handled all the bytes received from
@@ -98,7 +101,7 @@ async fn main(spawner: Spawner) -> ! {
                 for byte in rx_buf[0..read_bytes].iter() {
                     match cobs_decoder.feed(*byte) {
                         Ok(Some(frame_len)) => {
-                            handle_frame(&cobs_decoder.dest()[0..frame_len]).await;
+                            handle_frame(&cobs_decoder.dest()[0..frame_len]);
                         }
                         Ok(None) => (),
                         Err(_) => defmt::error!("COBS decode error"),
@@ -131,58 +134,22 @@ async fn led_task(mut display: SimpleLedMatrix) {
     }
 }
 
-pub async fn handle_frame(frame: &[u8]) {
+pub fn handle_frame(frame: &[u8]) {
     match CcsdsPacketReader::new_with_checksum(frame) {
-        Ok(reader) => match parse_request::<models::request::Request>(reader) {
-            Ok(request) => match request {
-                models::request::Request::Ping => todo!(),
-                models::request::Request::RequestAccelerometer => todo!(),
-                models::request::Request::SetBlinkFrequency(_duration) => todo!(),
-            },
-            Err(e) => {
-                defmt::error!("Failed to parse request: {:?}", e);
+        Ok(reader) => {
+            match postcard::from_bytes::<models::request::Request>(reader.packet_data()) {
+                Ok(request) => match request {
+                    models::request::Request::Ping => todo!(),
+                    models::request::Request::RequestAccelerometer => todo!(),
+                    models::request::Request::SetBlinkFrequency(_duration) => todo!(),
+                },
+                Err(e) => {
+                    defmt::error!("Failed to parse request: {:?}", e);
+                }
             }
-        },
+        }
         Err(e) => {
             defmt::error!("Failed to read packet: {:?}", e);
         }
     }
-}
-
-pub fn parse_request<Request: serde::de::DeserializeOwned>(
-    reader: CcsdsPacketReader,
-) -> postcard::Result<Request> {
-    let user_data = reader.packet_data();
-    let response = postcard::take_from_bytes::<Request>(user_data);
-    if let Err(e) = response {
-        defmt::error!("Failed to parse TM response: {}", e);
-        return Err(e);
-    }
-    let (response, _remainder) = response.unwrap();
-    Ok(response)
-}
-
-pub fn create_telemetry(tc_buf: &mut [u8], response: models::response::Response) -> usize {
-    let response_size = postcard::experimental::serialized_size(&response);
-    if let Err(e) = response_size {
-        defmt::error!("Failed to get size of response: {}", e);
-        return 0;
-    }
-    let packet_creator_result =
-        spacepackets::CcsdsPacketCreatorWithReservedData::new_tm_with_checksum(
-            spacepackets::SpHeader::new_from_apid(models::APID),
-            0,
-            tc_buf,
-        );
-    if let Err(e) = packet_creator_result {
-        defmt::error!("Failed to create packet: {}", e);
-        return 0;
-    }
-    let mut packet_creator = packet_creator_result.unwrap();
-
-    if let Err(e) = postcard::to_slice(&response, packet_creator.packet_data_mut()) {
-        defmt::error!("Failed to serialize response: {}", e);
-        return 0;
-    }
-    packet_creator.finish()
 }

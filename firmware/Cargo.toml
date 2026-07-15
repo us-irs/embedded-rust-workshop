@@ -1,6 +1,11 @@
 [workspace]
 resolver = "3"
 members = [
-  "apps", "bsp",
-  "exercises"
-, "packet-exercise"]
+  "apps",
+  "bsp",
+  "exercises",
+  "packet-exercise"
+]
+
+[profile.release]
+debug = 2
