@@ -8,7 +8,6 @@ use embassy_nrf::{buffered_uarte, peripherals, twim, uarte};
 use embassy_sync::{blocking_mutex::raw::ThreadModeRawMutex, signal::Signal};
 use embassy_time::{Delay, Duration, Timer};
 use embedded_io_async::Write as _;
-//use embedded_io_async::Write as _;
 use microbit_models_solution as models;
 use packet_exercise as _;
 use spacepackets::CcsdsPacketReader;
@@ -79,31 +78,36 @@ async fn main(spawner: Spawner) -> ! {
     spawner.spawn(led_task(board.display).expect("spawning led_task failed"));
 
     let mut rx_buf: [u8; 1024] = [0; 1024];
-    let mut tc_buf: [u8; 1024] = [0; 1024];
+    let mut tm_buf: [u8; 1024] = [0; 1024];
+    let mut encoded_tm_buf: [u8; 1024] = [0; 1024];
     let mut cobs_decoder: CobsDecoderHeapless<1024> = CobsDecoderHeapless::new();
-    let mut tm_list: heapless::Vec<models::request::Request, 8> = heapless::vec::Vec::new();
+    let mut request_queue = heapless::vec::Vec::new();
     loop {
         match uart_rx.read(&mut rx_buf).await {
             Ok(read_bytes) => {
                 for byte in rx_buf[0..read_bytes].iter() {
                     match cobs_decoder.feed(*byte) {
                         Ok(Some(frame_len)) => {
-                            handle_frame(&cobs_decoder.dest()[0..frame_len], &mut tm_list).await;
+                            handle_frame(&cobs_decoder.dest()[0..frame_len], &mut request_queue);
                         }
                         Ok(None) => (),
                         Err(_) => defmt::error!("COBS decode error"),
                     }
                 }
-                for request in tm_list.iter() {
+                for request in request_queue.iter() {
                     let tm_len = match request {
-                        models::request::Request::Ping => create_telemetry(
-                            &mut tc_buf,
-                            models::response::Response::CommandCompleted,
-                        ),
+                        models::request::Request::Ping => {
+                            defmt::info!("received ping request");
+                            create_telemetry(
+                                &mut tm_buf,
+                                models::response::Response::CommandCompleted,
+                            )
+                        }
                         models::request::Request::RequestAccelerometer => {
+                            defmt::info!("received accelerometer read request");
                             match lsm303agr.acceleration().await {
                                 Ok(data) => create_telemetry(
-                                    &mut tc_buf,
+                                    &mut tm_buf,
                                     models::response::Response::AccelerometerData(
                                         models::response::AccelerometerData {
                                             x_mg: data.x_mg() as i16,
@@ -119,22 +123,36 @@ async fn main(spawner: Spawner) -> ! {
                             }
                         }
                         models::request::Request::SetBlinkFrequency(duration) => {
+                            defmt::info!(
+                                "received set blink frequency request: {:?} ms",
+                                duration.as_millis()
+                            );
                             let embassy_duration =
                                 Duration::from_millis(duration.as_millis() as u64);
                             LED_TOGGLE_FREQ_UPDATE.signal(embassy_duration);
                             create_telemetry(
-                                &mut tc_buf,
+                                &mut tm_buf,
                                 models::response::Response::CommandCompleted,
                             )
                         }
                     };
-                    if tm_len > 0
-                        && let Err(e) = uart_tx.write_all(&tc_buf[0..tm_len]).await
-                    {
-                        defmt::error!("Failed to send telemetry: {:?}", e);
+                    if tm_len > 0 {
+                        match cobs::try_encode_including_sentinels(
+                            &tm_buf[0..tm_len],
+                            &mut encoded_tm_buf,
+                        ) {
+                            Ok(encoded_len) => {
+                                if let Err(e) =
+                                    uart_tx.write_all(&encoded_tm_buf[0..encoded_len]).await
+                                {
+                                    defmt::error!("Failed to send telemetry: {:?}", e);
+                                }
+                            }
+                            Err(_e) => defmt::error!("COBS encdoing buffer too small"),
+                        }
                     }
                 }
-                tm_list.clear();
+                request_queue.clear();
             }
             Err(_e) => (),
         }
@@ -162,39 +180,29 @@ async fn led_task(mut display: SimpleLedMatrix) {
     }
 }
 
-pub async fn handle_frame(frame: &[u8], tm_list: &mut heapless::Vec<models::request::Request, 8>) {
+pub fn handle_frame(frame: &[u8], request_list: &mut heapless::Vec<models::request::Request, 8>) {
     match CcsdsPacketReader::new_with_checksum(frame) {
-        Ok(reader) => match parse_request::<models::request::Request>(reader) {
-            Ok(request) => {
-                if tm_list.is_full() {
-                    defmt::error!("Telemetry list is full, dropping request: {}", request);
+        Ok(reader) => {
+            match postcard::from_bytes::<models::request::Request>(reader.packet_data()) {
+                Ok(request) => {
+                    if request_list.is_full() {
+                        defmt::error!("Request queue is full, dropping request: {}", request);
+                    }
+                    request_list.push(request).unwrap()
                 }
-                tm_list.push(request).unwrap()
+                Err(e) => {
+                    defmt::error!("Failed to parse request: {:?}", e);
+                }
             }
-            Err(e) => {
-                defmt::error!("Failed to parse request: {:?}", e);
-            }
-        },
+        }
         Err(e) => {
             defmt::error!("Failed to read packet: {:?}", e);
         }
     }
 }
 
-pub fn parse_request<Request: serde::de::DeserializeOwned>(
-    reader: CcsdsPacketReader,
-) -> postcard::Result<Request> {
-    let user_data = reader.packet_data();
-    let response = postcard::take_from_bytes::<Request>(user_data);
-    if let Err(e) = response {
-        defmt::error!("Failed to parse TM response: {}", e);
-        return Err(e);
-    }
-    let (response, _remainder) = response.unwrap();
-    Ok(response)
-}
-
-pub fn create_telemetry(tc_buf: &mut [u8], response: models::response::Response) -> usize {
+pub fn create_telemetry(tm_buf: &mut [u8], response: models::response::Response) -> usize {
+    defmt::info!("Creating telemetry for response: {:?}", response);
     let response_size = postcard::experimental::serialized_size(&response);
     if let Err(e) = response_size {
         defmt::error!("Failed to get size of response: {}", e);
@@ -203,8 +211,8 @@ pub fn create_telemetry(tc_buf: &mut [u8], response: models::response::Response)
     let packet_creator_result =
         spacepackets::CcsdsPacketCreatorWithReservedData::new_tm_with_checksum(
             spacepackets::SpHeader::new_from_apid(models::APID),
-            0,
-            tc_buf,
+            response_size.unwrap(),
+            tm_buf,
         );
     if let Err(e) = packet_creator_result {
         defmt::error!("Failed to create packet: {}", e);

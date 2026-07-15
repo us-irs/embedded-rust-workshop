@@ -2,12 +2,12 @@
 
 In the aerospace domain, most communication between systems is done using binary protocols instead
 of ASCII text-based protocols. Binary protocols are usually a lot more space-efficient
-and are also easier to parse and implement than ASCII based ones.
+and are also easier to parse and implement than ASCII-based ones.
 
 Furthermore, we also need to exchange our data structures frequently. For example, the ground system
 might want to send various parameters inside the telecommands, while the on-board software
 might need to send something like sensor data back to the ground station.
-The generic term used for converting your data structures into raw bytes and vice-versa is called
+The generic term used for converting your data structures into raw bytes and vice versa is called
 Serialization and Deserialization.
 
 In this exercise, you are going to learn about some proven ways to perform serialization and
@@ -21,7 +21,7 @@ In the embedded world, binary protocols based on tightly packed C types are stil
 The method here is relatively simple. Assuming that all the data structures that you want to
 exchange and send around are based on primitive types like `u8`, `u16`, `f32` etc., you just
 pack those types and send their raw byte representation. For example, assuming that you want
-to send some raw sensor data, which is represented by 3 `u16` values, one for each axes X, Y and Z,
+to send some raw sensor data, which is represented by 3 `u16` values, one for each axis X, Y and Z,
 you could pack the bytes into a 6 byte payload like this:
 
 ![Byte packing](./assets/byte-packing.drawio.svg)
@@ -81,13 +81,13 @@ simple point-to-point communication via simple protocols like UART.
 One proven way is to only include a data-link layer and an application layer protocol. The
 [COBS protocol](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) is an excellent
 fit as a data-link layer because it is very simple and there are libraries available for Rust, C and
-Python. This protocol works by removing all zeroes from a packet during an encoding process
-and adding them back during the decoding process. You can then use zeroes to delimit your packet
+Python. This protocol works by removing all zeros from a packet during an encoding process
+and adding them back during the decoding process. You can then use zeros to delimit your packet
 or frames in the data stream.
 
 This also allows recovery of the decoding process when there is a communication hiccup which
 is something that can always happen. Parsing for frames or packets now simply involves scanning for
-start and end markers (usually 0x0) and then decoding everything in between. If there is a
+start and end markers (usually 0x00) and then decoding everything in between. If there is a
 communication issue and data is lost, the protocol can resynchronize on the data stream when
 the next start marker is found. [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing)
 is also computationally inexpensive and has a deterministic worst-case overhead.
@@ -105,7 +105,7 @@ primary header with 6 bytes.
   packets.
 - There is a data length field to figure out the length of the payload following the header.
 
-Other than that, you are free to define the payload format yourself. Usually, it also is a good
+Other than that, you are free to define the payload format yourself. Usually, it is also a good
 idea to include a [CRC](https://en.wikipedia.org/wiki/Cyclic_redundancy_check) checksum at the
 end of the payload which allows to verify data integrity as well. The checksum is computed from
 the packet data based on a checksum polynomial. There are many types of
@@ -159,8 +159,8 @@ solution for this: The `enum` type which can do so much more than the simplistic
 enumeration types.
 
 Open the `host/microbit-models/src/lib.rs` file. Add a `#![no_std]` attribute at the top first.
-We do not need the standard run-time in our crate, and we would not be able to use the library
-in our firmware application if the run-time was included.
+We do not need the standard runtime in our crate, and we would not be able to use the library
+in our firmware application if the runtime was included.
 
 After that add a response module and a request module. Now add a `request.rs` and a `response.rs`
 file to the `src` folder. After that, add the `pub mod request` and `pub mod response` directives
@@ -263,7 +263,7 @@ Now, do the same for the responses inside the `Response` module. We want
 a `CommandCompleted`, and `AccelerometerData`. The `AccelerometerData` variant should contain
 the accelerometer data, but we actually have not defined a model for this type yet.
 
-Define an `AccelerometerData` structure which has 3 `i16` fields with the value in mg SI-units
+Define an `AccelerometerData` structure which has 3 `i16` fields with values in mg SI units
 for each axis first. Include all the derive attributes shown above as well.
 
 <details>
@@ -279,7 +279,7 @@ pub struct AccelerometerData {
 ```
 </details>
 
-Now, define the `Response` enumeration like specified above.
+Now, define the `Response` enumeration as specified above.
 
 <details>
 
@@ -628,7 +628,7 @@ pub fn parse_response(
 </details>
 
 Next, we have to update the `receive` method content to handle the raw decoded frames.
-The [`CcsdsPacketReader::new_with_checksum`](https://docs.rs/spacepackets/latest/spacepackets/struct.CcsdsPacketReader.html#method.new_with_checksumhttps://docs.rs/spacepackets/latest/spacepackets/struct.CcsdsPacketReader.html#method.new_with_checksum) allows to create a packet reader from the raw byte
+The [`CcsdsPacketReader::new_with_checksum`](https://docs.rs/spacepackets/latest/spacepackets/struct.CcsdsPacketReader.html#method.new_with_checksum) allows you to create a packet reader from the raw byte
 representation, assuming that a 16-bit checksum is present at the end of the packet.
 
 Inside the packet handling closure of the `receive` call, use and match on this function.
@@ -702,9 +702,302 @@ With that, we have a basic client we can use to send telecommands and handle tel
 
 You can now use the `cargo run -- --help` command to display the help text for your command line
 application or the `cargo run -- --ping` command to send a ping.
-The client will always go to a listener mode after it has done all TC handling, where it
+The client will always enter listener mode after it has done all TC handling, where it
 periodically scans for telemetry packets and prints them.
 
 ## Step 4 - Extract the requests from the UART data stream inside the firmware
 
+Now that we have everything in the client to send telecommands and process telemetry,
+we need the handling on the firmware side. One aspect of this is the extraction of telecommand
+packets from the data stream.
+
+We mentioned that our CCSDS space packets are encoded using the [COBS protocol](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing).
+The first step is to detect valid COBS frames and then decode them. We can use the [`cobs::CobsDecoderHeapless`](https://docs.rs/cobs/latest/cobs/struct.CobsDecoderHeapless.html)
+for this task. It allows streaming decoding, which means you can feed individual bytes into the decoder
+and the API will tell you if it has detected and decoded a valid frame for you. It also uses
+a [`heapless::Vec`](https://docs.rs/heapless/latest/heapless/vec/type.Vec.html) as the internal buffer,
+which is perfect for our use case because we do not need to add an allocator.
+
+Use the [decoder constructor `new`](https://docs.rs/cobs/latest/cobs/struct.CobsDecoderHeapless.html#method.new) to
+create the decoder above the loop. We can always re-use the same decoder, so it makes sense
+to create it above the loop once. Please note that the backing buffer length needs to be specified
+as a generic and that size should be the maximum expected COBS frame size. The COBS library
+provides an API to calculate that size based on the maximum expected CCSDS packet size, but you
+can also define a conservative size like 2048 or 4096 bytes for this. It is generally
+recommended to use frame sizes smaller than 2048 bytes when using a UART to increase robustness
+of the communication.
+
+One simple way to specify the construction of an object with generics is to explicitly
+write out the type using the `let VAR: TYPE = CONSTRUCTOR` syntax. Alternatively, you can use
+the turbofish syntax like `let VAR = TYPE::<GENERIC>::new()`.
+
+<details>
+
+```rust
+    let mut cobs_decoder: CobsDecoderHeapless<1024> = CobsDecoderHeapless::new();
+```
+</details>
+
+Now you can use the `feed` API to insert a bytestream received from the UART `read` call into the
+decoder. The decoder also offers an API which allows pushing larger byte chunks, but then we would
+have to also handle pushing remainder chunks on decoding failures, so we recommend using the simpler `feed` API.
+
+You can match on the [`feed` call](https://docs.rs/cobs/latest/cobs/struct.CobsDecoderHeapless.html#method.feed)
+to handle all the relevant cases. In the error case, you can perform an error printout using
+`defmt`. In the `Ok(Some(N))` case, a frame was successfully decoded into the internal buffer.
+You can access this buffer using the [`dest` API](https://docs.rs/cobs/latest/cobs/struct.CobsDecoderHeapless.html#method.dest).
+Perform these steps and extract the decoded buffer into a `decoded_frame` variable.
+
+<details>
+
+```rust
+    loop {
+        match uart_rx.read(&mut rx_buf).await {
+            Ok(read_bytes) => {
+                for byte in rx_buf[0..read_bytes].iter() {
+                    match cobs_decoder.feed(*byte) {
+                        Ok(Some(frame_len)) => {
+                            let decoded_frame = &cobs_decoder.dest()[0..frame_len];
+                            todo!();
+                        }
+                        Ok(None) => (),
+                        Err(_) => defmt::error!("COBS decode error"),
+                    }
+                }
+            }
+            Err(_e) => (),
+        }
+    }
+```
+</details>
+
+Now, we want to parse the CCSDS packet and access our packet payload.
+We can use the [`spacepackets::CcsdsPacketReader`](https://docs.rs/spacepackets/latest/spacepackets/struct.CcsdsPacketReader.html)
+object for this. The [`spacepackets::CcsdsPacketReader::new_with_checksum`](https://docs.rs/spacepackets/latest/spacepackets/struct.CcsdsPacketReader.html#method.new_with_checksum)
+API also performs the CRC16 check for us, which is also nice to ensure packet integrity and
+does not cost too much. Match on the result of this call. Use `defmt::error!` to log
+an error in case the construction fails, and a `todo!` block on successful creation
+of a packet reader.
+
+<details>
+
+```rust
+    loop {
+        match uart_rx.read(&mut rx_buf).await {
+            Ok(read_bytes) => {
+                for byte in rx_buf[0..read_bytes].iter() {
+                    match cobs_decoder.feed(*byte) {
+                        Ok(Some(frame_len)) => {
+                            let decoded_frame = &cobs_decoder.dest()[0..frame_len];
+                            match CcsdsPacketReader::new_with_checksum(decoded_frame) {
+                                Ok(reader) => todo!(),
+                                Err(e) => {
+                                    defmt::error!("Failed to read packet: {:?}", e);
+                                }
+                            }
+                        }
+                        Ok(None) => (),
+                        Err(_) => defmt::error!("COBS decode error"),
+                    }
+                }
+            }
+            Err(_e) => (),
+        }
+    }
+```
+</details>
+
+
+The reader gives us access to the packet payload via the `user_data` method. We know that
+this payload should contain `models::request::Request` enumeration. We can use the
+`postcard::from_bytes` API to deserialize the payload into a `Request` type. Use a `match` on
+that function as well to handle the error case.
+
+<details>
+
+```rust
+    loop {
+        match uart_rx.read(&mut rx_buf).await {
+            Ok(read_bytes) => {
+                for byte in rx_buf[0..read_bytes].iter() {
+                    match cobs_decoder.feed(*byte) {
+                        Ok(Some(frame_len)) => {
+                            let decoded_frame = &cobs_decoder.dest()[0..frame_len];
+                            match CcsdsPacketReader::new_with_checksum(decoded_frame) {
+                                Ok(reader) => match parse_request::<models::request::Request>(reader) {
+                                    Ok(request) => match request {
+                                        models::request::Request::Ping => todo!(),
+                                        models::request::Request::RequestAccelerometer => todo!(),
+                                        models::request::Request::SetBlinkFrequency(_duration) => todo!(),
+                                    },
+                                    Err(e) => {
+                                        defmt::error!("Failed to parse request: {:?}", e);
+                                    }
+                                },
+                                Err(e) => {
+                                    defmt::error!("Failed to read packet: {:?}", e);
+                                }
+                            }
+                        }
+                        Ok(None) => (),
+                        Err(_) => defmt::error!("COBS decode error"),
+                    }
+                }
+            }
+            Err(_e) => (),
+        }
+    }
+```
+</details>
+
+The function is getting a bit unwieldy! We can extract some logic into dedicated functions to
+increase the readability of the routine. This helps other programmers figuring out what is
+going on more quickly. Always remember that code tends to be read a lot more than it is written.
+We are going to do a refactoring. Create a new function with the following prototype:
+
+```rust
+pub fn handle_frame(frame: &[u8]) {
+    todo!();
+}
+```
+
+Move the code which handles the decoded COBS frame into that function and call the function in
+your main routine.
+
+<details>
+
+```rust
+// (...)
+loop {
+    match uart_rx.read(&mut rx_buf).await {
+        Ok(read_bytes) => {
+            for byte in rx_buf[0..read_bytes].iter() {
+                match cobs_decoder.feed(*byte) {
+                    Ok(Some(frame_len)) => {
+                        handle_frame(&cobs_decoder.dest()[0..frame_len]);
+                    }
+                    Ok(None) => (),
+                    Err(_) => defmt::error!("COBS decode error"),
+                }
+            }
+        }
+        Err(_e) => (),
+    }
+}
+
+pub fn handle_frame(frame: &[u8]) {
+    match CcsdsPacketReader::new_with_checksum(frame) {
+        Ok(reader) => match postcard::from_bytes::<models::request::Request>(reader.packet_data()) {
+            Ok(request) => match request {
+                models::request::Request::Ping => todo!(),
+                models::request::Request::RequestAccelerometer => todo!(),
+                models::request::Request::SetBlinkFrequency(_duration) => todo!(),
+            },
+            Err(e) => {
+                defmt::error!("Failed to parse request: {:?}", e);
+            }
+        },
+        Err(e) => {
+            defmt::error!("Failed to read packet: {:?}", e);
+        }
+    }
+}
+```
+</details>
+
+This is more readable now. If you only care about the frame processing, there is a dedicated
+function that you can look at now.
+
 ## Step 5 - Process requests and send telemetry inside the firmware
+
+The next step is to process the request and generate a response telemetry packet.
+You might start with a simple initial implementation where you handle the request directly
+and also generate the telemetry reply directly. However, this might get unwieldy quickly
+because you need to pass all required state and context information into the frame handler
+function. We are going to use a principle called the separation of concerns here.
+Instead of handling the requests directly in the frame handler, we are going to push all
+detected requests into a queue. This allows handling all the requests in the main method instead.
+
+You can also use the `heapless::Vec` type to store all detected requests. Create an empty
+vector above the main loop. We can also re-use this data structure by clearing it after
+processing.
+
+Pass the vector to the frame handler by updating the `handle_frame` prototype:
+
+```rust
+pub fn handle_frame(frame: &[u8], request_list: &mut heapless::Vec<models::request::Request, 8>) {
+    // (...)
+}
+```
+
+Doing it like this also prevents the need to specify all the generics when you create
+the heapless vector because the compiler can deduce it from the argument type. Update the code
+so a mutable reference to the vector is also passed to the frame handler.
+
+<details>
+
+```rust
+    let mut request_queue = heapless::vec::Vec::new();
+    loop {
+        match uart_rx.read(&mut rx_buf).await {
+            Ok(read_bytes) => {
+                for byte in rx_buf[0..read_bytes].iter() {
+                    match cobs_decoder.feed(*byte) {
+                        Ok(Some(frame_len)) => {
+                            handle_frame(&cobs_decoder.dest()[0..frame_len], &mut request_queue);
+                        }
+                        Ok(None) => (),
+                        Err(_) => defmt::error!("COBS decode error"),
+                    }
+                }
+            Err(_e) => (),
+        }
+    }
+```
+</details>
+
+Next, update the frame handler to also push the parsed requests (if one was found) into the queue.
+Remember that this is a static data structure. It can become full and you should check
+and log an error if this happens. Unless you send a high amount of requests in a very short time
+and the software cannot keep up, this should not happen, but it's still good practice to
+include error logging at the very least.
+
+<details>
+
+```rust
+pub fn handle_frame(frame: &[u8], request_list: &mut heapless::Vec<models::request::Request, 8>) {
+    match CcsdsPacketReader::new_with_checksum(frame) {
+        Ok(reader) => {
+            match postcard::from_bytes::<models::request::Request>(reader.packet_data()) {
+                Ok(request) => {
+                    if request_list.is_full() {
+                        defmt::error!("Request queue is full, dropping request: {}", request);
+                    }
+                    request_list.push(request).unwrap()
+                }
+                Err(e) => {
+                    defmt::error!("Failed to parse request: {:?}", e);
+                }
+            }
+        }
+        Err(e) => {
+            defmt::error!("Failed to read packet: {:?}", e);
+        }
+    }
+}
+```
+</details>
+
+Now, we can add request handling to our code by looping through all received requests.
+Generally, we want to create and send a COBS encoded response telemetry packet via the UART
+interface for each request. Depending on the telecommand, we might also have to perform different tasks.
+
+- For the ping request, we just want to send back a `models::response::Response::CommandCompleted`
+- For the `RequestAccelerometer` request, we want to read the accelerometer data and send it back
+  as a `models::response::Response::AccelerometerData(..)` telemetry packet.
+- For the `SetBlinkFrequency` request, we want to set the blink frequency of the LED and send
+  back a `models::response::Response::CommandCompleted` telemetry packet.
+
+Our telemetry packet will only contain one `models::response::Response` variant. It makes sense
+to create a `create_telemetry` function which expects the response variant and creates a telemetry
+packet containing that response. So we are going to write this function first.

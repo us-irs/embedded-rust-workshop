@@ -78,14 +78,14 @@ async fn main(spawner: Spawner) -> ! {
             Ok(_read_bytes) => {
                 // TODO:
                 //
-                // Step 2
+                // Step 4
                 //
                 // 1. Parse for COBS encoded frames
                 // 2. Try to interpret the frame as a CCSDS packet, using the spacepackets::CcsdsPacketReader
                 // 3. Parse the contained models::request::Request structure
                 // 4. Match on the request structure. Do not handle the requests yet.
                 //
-                // Step 3
+                // Step 5
                 //
                 // 1. Re-factor the code to push the detected request into a heapless vector of requests
                 // 2. Handle the list of requests after having handled all the bytes received from
