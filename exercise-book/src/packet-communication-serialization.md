@@ -1,6 +1,6 @@
 # Packet Communication and Serialization
 
-In the aerospace domain, most communication between systems is done using binary protocols instead
+In the embedded domain, most communication between systems is done using binary protocols instead
 of ASCII text-based protocols. Binary protocols are usually a lot more space-efficient
 and are also easier to parse and implement than ASCII-based ones.
 
@@ -66,10 +66,10 @@ will be to implement a simple communication protocol between the host computer w
 following requests and responses:
 
 - `Ping` request
-- `Ok` response for unit responses with no additional payload
 - `RequestAccelerometer` request to specifically request housekeeping data.
-- `Accelerometer` response which contains the accelerometer data
 - `SetBlinkFrequency` to set the blink frequency.
+- `Accelerometer` response which contains the accelerometer data
+- `Ok` response for unit responses with no additional payload
 
 ## Binary protocols
 
@@ -1001,3 +1001,209 @@ interface for each request. Depending on the telecommand, we might also have to 
 Our telemetry packet will only contain one `models::response::Response` variant. It makes sense
 to create a `create_telemetry` function which expects the response variant and creates a telemetry
 packet containing that response. So we are going to write this function first.
+
+The function should have the following prototype:
+
+```rust
+pub fn create_telemetry(tm_buf: &mut [u8], response: models::response::Response) -> usize;
+```
+
+It takes the response, package it into a telemetry packet, and then serializes the telemetry packet
+into the provided buffer. Finally, it should return the length of the telemetry packet.
+
+Try to implement this function on your own as best as you can. You can use the following
+API to do this:
+
+- [`postcard::experimental::serialized_size`](https://docs.rs/postcard/latest/postcard/experimental/fn.serialized_size.html) to determine the serialized size of the payload.
+- [`spacepackets::CcsdsPacketCreatorWithReservedData::new_tm_with_checksum`](https://docs.rs/spacepackets/latest/spacepackets/struct.CcsdsPacketCreatorWithReservedData.html#method.new_tm_with_checksum) helps you
+  to create a telemetry packet with a pre-reserved payload buffer, so you need one less buffer.
+  You need to call the `finish` method after you have written the payload response to also
+  write the 16-bit CRC.
+- [`postcard::to_slice`](https://docs.rs/postcard/latest/postcard/fn.to_slice.html) to serialize the
+  response into the CCSDS packet payload buffer. The packet creator we suggested above has API
+  to retrieve a mutable reference to the payload buffer.
+
+
+<details>
+
+```rust
+pub fn create_telemetry(tm_buf: &mut [u8], response: models::response::Response) -> usize {
+    defmt::info!("Creating telemetry for response: {:?}", response);
+    let response_size = postcard::experimental::serialized_size(&response);
+    if let Err(e) = response_size {
+        defmt::error!("Failed to get size of response: {}", e);
+        return 0;
+    }
+    let packet_creator_result =
+        spacepackets::CcsdsPacketCreatorWithReservedData::new_tm_with_checksum(
+            spacepackets::SpHeader::new_from_apid(models::APID),
+            response_size.unwrap(),
+            tm_buf,
+        );
+    if let Err(e) = packet_creator_result {
+        defmt::error!("Failed to create packet: {}", e);
+        return 0;
+    }
+    let mut packet_creator = packet_creator_result.unwrap();
+
+    if let Err(e) = postcard::to_slice(&response, packet_creator.packet_data_mut()) {
+        defmt::error!("Failed to serialize response: {}", e);
+        return 0;
+    }
+    packet_creator.finish()
+}
+```
+</details>
+
+Now you can prepare TM response packets for each received telecommand. Go ahead and implement
+TC handling in your frame handler according to the requirements we have specified. For each
+request received, handle the telecommand, create a telemetry, and return the size of the
+created telemetry packet like this:
+
+```rust
+        let tm_len = match request {
+            models::request::Request::Ping => {
+                todo!();
+            }
+            models::request::Request::RequestAccelerometer => {
+                todo!();
+            }
+            models::request::Request::SetBlinkFrequency(duration) => {
+                todo!();
+            }
+        };
+```
+
+Here is a reminder and some hints:
+
+- `models::request::Request::Ping`: Here, you only need to prepare the acknowledgment telemetry
+   packet.
+- `models::request::Request::RequestAccelerometer`: Read the sensor using the sensor driver and
+   then send back the response variant containing the sensor data.
+- `models::request::Request::SetBlinkFrequency`: Update the blink frequency using the provided
+   `LED_TOGGLE_FREQ_UPDATE` static signal and then send back the acknowledgment telemetry packet.
+
+<details>
+
+```rust
+    let tm_len = match request {
+        models::request::Request::Ping => {
+            defmt::info!("received ping request");
+            create_telemetry(
+                &mut tm_buf,
+                models::response::Response::CommandCompleted,
+            )
+        }
+        models::request::Request::RequestAccelerometer => {
+            defmt::info!("received accelerometer read request");
+            match lsm303agr.acceleration().await {
+                Ok(data) => create_telemetry(
+                    &mut tm_buf,
+                    models::response::Response::AccelerometerData(
+                        models::response::AccelerometerData {
+                            x_mg: data.x_mg() as i16,
+                            y_mg: data.y_mg() as i16,
+                            z_mg: data.z_mg() as i16,
+                        },
+                    ),
+                ),
+                Err(_e) => {
+                    defmt::error!("Failed to read accelerometer data");
+                    0
+                }
+            }
+        }
+        models::request::Request::SetBlinkFrequency(duration) => {
+            defmt::info!(
+                "received set blink frequency request: {:?} ms",
+                duration.as_millis()
+            );
+            let embassy_duration =
+                Duration::from_millis(duration.as_millis() as u64);
+            LED_TOGGLE_FREQ_UPDATE.signal(embassy_duration);
+            create_telemetry(
+                &mut tm_buf,
+                models::response::Response::CommandCompleted,
+            )
+        }
+    };
+```
+</details>
+
+Now you have the CCSDS packet prepared. However, we still need to encode this into the COBS format
+and then add 0 bytes around the encoded packet because the client expects COBS encoded packets.
+You can use the [`cobs::encode_including_sentinels`](https://docs.rs/cobs/latest/cobs/fn.encode_including_sentinels.html)
+methods to encode the packet and also add the frame delimiter 0 before and after the frame.
+After encoding, send the encoded packet using the `write_all` method of the UART TX driver.
+You also need an additional encoded data buffer. You can use a conservative estimate for its size,
+but you can also calculate the precise size you need by using `cobs::max_encoding_length`.
+
+It is also a good idea to employ defensive programming, so also check whether the `tm_len` is
+actually larger than 0.
+
+<details>
+
+```rust
+    let encoded_tm_buf: [u8; cobs::max_encoding_length(1024)] = [0; cobs::max_encoding_length(1024)];
+    //(...)
+
+        if tm_len > 0 {
+            match cobs::try_encode_including_sentinels(
+                &tm_buf[0..tm_len],
+                &mut encoded_tm_buf,
+            ) {
+                Ok(encoded_len) => {
+                    if let Err(e) =
+                        uart_tx.write_all(&encoded_tm_buf[0..encoded_len]).await
+                    {
+                        defmt::error!("Failed to send telemetry: {:?}", e);
+                    }
+                }
+                Err(_e) => defmt::error!("COBS encoding buffer too small"),
+            }
+        }
+```
+
+</details>
+
+Both the firmware and the client now have everything required for useful two-way communication.
+
+Flash the finished firmware application to the micro:bit v2 by navigating into the `firmware/packet-exercise`
+folder and using `cargo run --release`.
+
+Then run the client by navigating into the `host/client` folder and running `cargo run --release -- --ping`.
+Keep in mind that you might have to adapt the `serial_port` config inside `config.toml` manually,
+or pass the serial port to the client via CLI arguments.
+
+You should observe the following output for the micro:bit v2 logs now:
+
+```console
+-- micro:bit packet and serialization application --
+65.682739 [INFO ] received ping request (solution src/bin/solution.rs:101)
+65.682769 [INFO ] Creating telemetry for response: CommandCompleted (solution src/bin/solution.rs:206)
+```
+
+
+and the following output for your client
+
+```console
+-- Embedded Rust Workshop host-client --
+[2026-07-23T15:52:24Z INFO client_solution] Connecting to serial port: /dev/ttyACM0
+[2026-07-23T15:52:24Z INFO client_solution] RX response: CommandCompleted
+```
+
+You can now use the following command inside the host client folder: `cargo run -- --help` to
+see all CLI commands that you can use now to send the request types you implemented.
+Test all of them.
+
+## Finishing Up
+
+This exercise has shown you how to set up a reliable communication stack for end-to-end
+communication in both directions. You also have a starting point and basic knowledge for writing
+simple client applications on host computers. You also extracted some components into a shared
+library which can be used by both the firmware and the host client.
+You have also used the `postcard` and the `serde` library to simplify serialization tasks
+for both host and client apps significantly.
+
+Rust simplifies the process of modularising and layering your applications significantly. The
+`firmware` and `host` split workspaces is one way of how you can manage your growing applications.

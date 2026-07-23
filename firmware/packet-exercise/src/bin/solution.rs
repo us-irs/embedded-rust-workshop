@@ -79,7 +79,8 @@ async fn main(spawner: Spawner) -> ! {
 
     let mut rx_buf: [u8; 1024] = [0; 1024];
     let mut tm_buf: [u8; 1024] = [0; 1024];
-    let mut encoded_tm_buf: [u8; 1024] = [0; 1024];
+    let mut encoded_tm_buf: [u8; cobs::max_encoding_length(1024)] =
+        [0; cobs::max_encoding_length(1024)];
     let mut cobs_decoder: CobsDecoderHeapless<1024> = CobsDecoderHeapless::new();
     let mut request_queue = heapless::vec::Vec::new();
     loop {
